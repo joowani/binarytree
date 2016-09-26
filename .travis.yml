@@ -1,0 +1,16 @@
+language: python
+sudo: false
+python:
+    - 2.7
+    - 3.4
+    - 3.5
+install:
+    - pip install coverage
+    - pip install pytest
+    - pip install pytest-cov
+    - pip install python-coveralls
+    - python setup.py install
+script:
+    - py.test --cov-report= --cov=binarytree tests.py
+after_success:
+    - coveralls
