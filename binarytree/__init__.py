@@ -139,7 +139,7 @@ def _build_tree(values):
 
 
 def _build_str(node):
-    """Helper function used for display."""
+    """Helper function used for pretty printing."""
     if node == _null:
         return 0, 0, 0, []
 
@@ -226,15 +226,7 @@ def _random_insert(root, value):
 
 
 def _validate_tree(root):
-    """Check if the tree is malformed.
-
-    Each node in the tree must be of the specified class (default: Node) and
-    not have a null value (default: None).
-
-    :param root: the binary tree node
-    :type root: binarytree.Node
-    :return:
-    """
+    """Check if the tree is malformed."""
     current_nodes = [root]
 
     while current_nodes:
@@ -252,6 +244,7 @@ def _validate_tree(root):
 
 
 def _generate_values(height, multiplier=1):
+    """Generate and return a list of random node values."""
     if not isinstance(height, int) or height < 0:
         raise ValueError('Height must be a non-negative integer')
     count = 2 ** (height + 1) - 1
@@ -264,21 +257,15 @@ def setup(node_class=Node,
           value_attr='value',
           left_attr='left',
           right_attr='right'):
-    """Setup a custom definition of the binary tree node.
+    """Setup a custom specification for the binary tree node.
 
-    :param node_class: the tree node class
-    :type node_class: object
-    :param node_init_func: node initializer function
-    :type node_init_func:
-
-    :param null_value: the null value to signify "no child" (default: None)
-    :type null_value: object
-    :param value_attr: the value attribute (default: "value")
-    :type right_attr: str
-    :param left_attr: the left child attribute (default: "left")
-    :type left_attr: str
-    :param right_attr: the right child attribute (default: "right")
-    :type right_attr: str
+    :param node_class: the binary tree node class (default: binarytree.Node)
+    :param node_init_func: node initializer function which takes the node
+        value as the only argument and returns a node instance
+    :param null_value: the null/sentinel value (default: None)
+    :param value_attr: the value attribute name (default: "value")
+    :param left_attr: the left child attribute name (default: "left")
+    :param right_attr: the right child attribute name (default: "right")
     """
     global _node_cls
     global _node_init_func
@@ -296,6 +283,12 @@ def setup(node_class=Node,
 
 
 def tree(height=4, balanced=False):
+    """Generate and return a random binary tree.
+
+    :param height: the height of the tree (default: 4)
+    :param balanced: whether the tree is weight-balanced (default: False)
+    :return: the root of the generated tree
+    """
     values = _generate_values(height)
     if balanced:
         return _build_tree(values)
@@ -309,6 +302,11 @@ def tree(height=4, balanced=False):
 
 
 def bst(height=4):
+    """Generate and return a random binary search tree.
+
+    :param height: the height of the tree (default: 4)
+    :return: the root of the generated binary search tree
+    """
     values = _generate_values(height)
     root = _new_node(values[0])
     for index in range(1, len(values)):
@@ -319,6 +317,12 @@ def bst(height=4):
 
 
 def heap(height=4, max=False):
+    """Generate and return a random heap.
+
+    :param height: the height of the tree (default: 4)
+    :param max: whether to generate a max or min heap
+    :return: the root of the generated heap
+    """
     values = _generate_values(height)
     if max:
         negated = [-v for v in values]
@@ -332,7 +336,7 @@ def heap(height=4, max=False):
 def pprint(bt):
     """Pretty print the binary tree.
 
-    :param bt: the binary tree to display
+    :param bt: the binary tree to pretty print
     :raises ValueError: if an invalid tree is given
     """
     if bt == _null:
@@ -349,7 +353,7 @@ def pprint(bt):
 
 
 def convert(bt):
-    """Convert a binary tree into a list, or list into a binary tree.
+    """Convert a binary tree into a list, or vice versa.
 
     :param bt: the binary tree to convert
     :return: the converted form of the binary tree

@@ -85,16 +85,16 @@ Generate and pretty-print binary trees:
 
     from binarytree import tree, bst, heap, pprint
 
-    # Generate random binary trees
+    # Generate a random binary tree
     my_tree = tree(height=5, balanced=False)
 
-    # Generate random binary search trees
+    # Generate a random binary search tree
     my_bst = bst(height=5)
 
-    # Generate random min and max heaps
+    # Generate random max heap
     my_heap = heap(height=1, max=True)
 
-    # Pretty print the binary trees in stdout
+    # Pretty print the trees in stdout
     pprint(my_tree)
     pprint(my_bst)
     pprint(my_heap)
