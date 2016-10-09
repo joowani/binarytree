@@ -1,3 +1,4 @@
+import inspect as inspect_
 from heapq import heapify
 from random import sample, random
 
@@ -18,40 +19,59 @@ class Node(object):
         self.__setattr__(_right_attr, _null)
 
     def __repr__(self):
-        return 'Node({})'.format(self.__getattribute__(_value_attr))
+        return 'Node({})'.format(
+            self.__getattribute__(_value_attr)
+        )
+
+    def __str__(self):
+        return stringify(self)
+
+    def to_list(self):
+        return convert(self)
+
+    def inspect(self):
+        return inspect(self)
 
 
 def _new_node(value):
+    """Create and return a new node."""
     if _node_init_func is not None:
         return _node_init_func(value)
     return (_node_cls or Node)(value)
 
 
 def _is_list(obj):
+    """Return True if the object is a list, else False."""
     return isinstance(obj, list)
 
 
 def _is_node(obj):
+    """Return True if the object is a node, else False."""
     return isinstance(obj, _node_cls or Node)
 
 
 def _value_of(node):
+    """Return the value of the node."""
     return getattr(node, _value_attr)
 
 
 def _left_of(node):
+    """Return the left child of the node."""
     return getattr(node, _left_attr)
 
 
 def _right_of(node):
+    """Return the right child of the node."""
     return getattr(node, _right_attr)
 
 
 def _add_left(parent, child):
+    """Add the child to the left of the parent."""
     setattr(parent, _left_attr, child)
 
 
 def _add_right(parent, child):
+    """Add the child to the right of the parent."""
     setattr(parent, _right_attr, child)
 
 
@@ -69,7 +89,7 @@ def _is_balanced(node):
 
 
 def _build_list(root):
-    """Build a list of values from a tree."""
+    """Build a list from a tree and return it"""
     result = []
     current_nodes = [root]
     level_not_empty = True
@@ -105,7 +125,7 @@ def _build_list(root):
 
 
 def _build_tree(values):
-    """Build a tree from a list of values."""
+    """Build a tree from a list and return its root."""
     if not values:
         return _null
 
@@ -139,7 +159,7 @@ def _build_tree(values):
 
 
 def _build_str(node):
-    """Helper function used for pretty printing."""
+    """Helper function used for pretty-printing."""
     if node == _null:
         return 0, 0, 0, []
 
@@ -251,21 +271,22 @@ def _generate_values(height, multiplier=1):
     return sample(range(count * multiplier), count)
 
 
-def setup(node_class=Node,
-          node_init_func=None,
-          null_value=None,
-          value_attr='value',
-          left_attr='left',
-          right_attr='right'):
-    """Setup a custom specification for the binary tree node.
+def setup(node_class,
+          node_init_func,
+          null_value,
+          value_attr,
+          left_attr,
+          right_attr):
+    """Set up a custom specification for the binary tree node.
 
-    :param node_class: the binary tree node class (default: binarytree.Node)
+    :param node_class: the binary tree node class
     :param node_init_func: node initializer function which takes the node
-        value as the only argument and returns a node instance
-    :param null_value: the null/sentinel value (default: None)
-    :param value_attr: the value attribute name (default: "value")
-    :param left_attr: the left child attribute name (default: "left")
-    :param right_attr: the right child attribute name (default: "right")
+        value as the only argument and returns an instance of node_class
+    :param null_value: the null/sentinel value
+    :param value_attr: the attribute name reserved for the node value
+    :param left_attr: the attribute name reserved for the left child
+    :param right_attr: the attribute name reserved for the right child
+    :raises ValueError: if an invalid set of arguments is given
     """
     global _node_cls
     global _node_init_func
@@ -274,6 +295,39 @@ def setup(node_class=Node,
     global _left_attr
     global _right_attr
 
+    # Do some sanity checking on the arguments
+    if not inspect_.isclass(node_class):
+        raise ValueError('Invalid class given for the node')
+    try:
+        node = node_init_func(2 if null_value == 1 else 1)
+    except:
+        raise ValueError(
+            'The node initializer function must be a callable which '
+            'takes the node value as its only argument'
+        )
+    if not isinstance(node, node_class):
+        raise ValueError(
+            'The node initializer function must be a callable which '
+            'returns an instance of "{}"'.format(node_class.__name__)
+        )
+    for attribute in [value_attr, left_attr, right_attr]:
+        if not hasattr(node, attribute):
+            raise ValueError(
+                'The node class does not have a required '
+                'attribute "{}"'.format(attribute)
+            )
+    if getattr(node, left_attr) != null_value:
+        raise ValueError(
+            'The node class does not initialize instances with expected '
+            'null/sentinel value "{}" for its left child node attribute '
+            '"{}"'.format(null_value, left_attr)
+        )
+    if getattr(node, right_attr) != null_value:
+        raise ValueError(
+            'The node class does not initialize instances with expected '
+            'null/sentinel value "{}" for its right child node attribute '
+            '"{}"'.format(null_value, right_attr)
+        )
     _node_cls = node_class
     _node_init_func = node_init_func
     _null = null_value
@@ -283,11 +337,11 @@ def setup(node_class=Node,
 
 
 def tree(height=4, balanced=False):
-    """Generate and return a random binary tree.
+    """Generate a random binary tree and return its root.
 
     :param height: the height of the tree (default: 4)
     :param balanced: whether the tree is weight-balanced (default: False)
-    :return: the root of the generated tree
+    :return: the root of the generated binary tree
     """
     values = _generate_values(height)
     if balanced:
@@ -302,7 +356,7 @@ def tree(height=4, balanced=False):
 
 
 def bst(height=4):
-    """Generate and return a random binary search tree.
+    """Generate a random binary search tree and return its root.
 
     :param height: the height of the tree (default: 4)
     :return: the root of the generated binary search tree
@@ -317,7 +371,7 @@ def bst(height=4):
 
 
 def heap(height=4, max=False):
-    """Generate and return a random heap.
+    """Generate a random min/max heap and return its root.
 
     :param height: the height of the tree (default: 4)
     :param max: whether to generate a max or min heap
@@ -333,23 +387,32 @@ def heap(height=4, max=False):
         return _build_tree(values)
 
 
+def stringify(bt):
+    """Return the string representation of the binary tree.
+
+    :param bt: the binary tree
+    :return: the string representation
+    """
+    if bt == _null:
+        return ''
+    elif _is_list(bt):
+        if not bt:
+            return ''
+        bt = _build_tree(bt)
+    elif _is_node(bt):
+        _validate_tree(bt)
+    else:
+        raise ValueError('Expecting a list or a node')
+    return '\n' + '\n'.join(_build_str(bt)[-1])
+
+
 def pprint(bt):
     """Pretty print the binary tree.
 
     :param bt: the binary tree to pretty print
     :raises ValueError: if an invalid tree is given
     """
-    if bt == _null:
-        return
-    if _is_list(bt):
-        if not bt:
-            return
-        bt = _build_tree(bt)
-    elif _is_node(bt):
-        _validate_tree(bt)
-    else:
-        raise ValueError('Expecting a list or a node')
-    print('\n' + '\n'.join(_build_str(bt)[-1]))
+    print(stringify(bt))
 
 
 def convert(bt):

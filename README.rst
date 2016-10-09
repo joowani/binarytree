@@ -67,7 +67,7 @@ You may need to use ``sudo`` depending on your environment setup.
 Getting Started
 ===============
 
-**BinaryTree** uses the following class to represent a tree node:
+By default, **BinaryTree** uses the following class to represent a tree node:
 
 .. code-block:: python
 
@@ -79,20 +79,20 @@ Getting Started
             self.right = None
 
 
-Generate and pretty-print binary trees:
+Generate and pretty-print all kinds of binary trees:
 
 .. code-block:: python
 
     from binarytree import tree, bst, heap, pprint
 
-    # Generate a random binary tree
+    # Generate a random binary tree and return its root
     my_tree = tree(height=5, balanced=False)
 
-    # Generate a random binary search tree
+    # Generate a random BST and return its root
     my_bst = bst(height=5)
 
-    # Generate random max heap
-    my_heap = heap(height=1, max=True)
+    # Generate a random max heap and return its root
+    my_heap = heap(height=3, max=True)
 
     # Pretty print the trees in stdout
     pprint(my_tree)
@@ -100,7 +100,7 @@ Generate and pretty-print binary trees:
     pprint(my_heap)
 
 
-`List representations`_ are also supported:
+`List representations`_ are supported as well:
 
 .. _List representations:
     https://en.wikipedia.org/wiki/Binary_tree#Arrays
@@ -113,10 +113,10 @@ Generate and pretty-print binary trees:
 
     my_list = [7, 3, 2, 6, 9, 4, 1, 5, 8]
 
-    # Convert the list into a tree structure
+    # Convert the list into a tree and return its root
     my_tree = convert(my_list)
 
-    # Convert the list into a heap structure
+    # Convert the list into a heap and return its root
     heapify(my_list)
     my_tree = convert(my_list)
 
@@ -137,20 +137,20 @@ Inspect a tree to quickly see its various properties:
 
     result = inspect(my_tree)
     print(result['height'])
-    print(result['is_bst'])
-    print(result['is_height_balanced'])
-    print(result['is_max_heap'])
-    print(result['is_min_heap'])
-    print(result['is_weight_balanced'])
+    print(result['node_count'])
     print(result['leaf_count'])
-    print(result['max_leaf_depth'])
+    print(result['min_value'])
     print(result['max_value'])
     print(result['min_leaf_depth'])
-    print(result['min_value'])
-    print(result['node_count'])
+    print(result['max_leaf_depth'])
+    print(result['is_bst'])
+    print(result['is_max_heap'])
+    print(result['is_min_heap'])
+    print(result['is_height_balanced'])
+    print(result['is_weight_balanced'])
 
 
-Import the `Node` class directly to build your own trees:
+Import the `Node` class and build your own trees:
 
 .. code-block:: python
 
@@ -170,12 +170,12 @@ and use your own custom node specification:
 
 .. code-block:: python
 
-    from binarytree import setup, tree, pprint
+    from binarytree import Node, setup, tree, pprint
 
-    # Define your own null/sentinel value (default: None)
-    null = -1
+    # Define your own null/sentinel value
+    my_null = -1
 
-    # Define own node class (default: binarytree.Node)
+    # Define your own node class
     class MyNode(object):
 
         def __init__(self, data, left, right):
@@ -183,11 +183,11 @@ and use your own custom node specification:
             self.l_child = left
             self.r_child = right
 
-    # Call setup in the beginning to apply the custom specification
+    # Call setup in the beginning to apply your specification
     setup(
-        node_init_func=lambda v: MyNode(v, null, null),
+        node_init_func=lambda v: MyNode(v, my_null, my_null),
         node_class=MyNode,
-        null_value=null,
+        null_value=my_null,
         value_attr='data',
         left_attr='l_child',
         right_attr='r_child'
