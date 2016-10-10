@@ -466,7 +466,7 @@ def inspect(bt):
         next_nodes = []
 
         for node in current_nodes:
-            number_childs = 0
+            num_of_children = 0
             node_count += 1
             node_value = _value_of(node)
             min_value = min(node_value, min_value)
@@ -493,7 +493,7 @@ def inspect(bt):
                 elif _value_of(left_child) < node_value:
                     is_ascending = False
                 next_nodes.append(left_child)
-                number_childs +=1
+                num_of_children +=1
 
             if right_child != _null:
                 if _value_of(right_child) > node_value:
@@ -502,8 +502,8 @@ def inspect(bt):
                     is_ascending = False
                     is_bst = False
                 next_nodes.append(right_child)
-                number_childs += 1
-            if number_childs == 1:
+                num_of_children += 1
+            if num_of_children == 1:
                 is_full = False
 
         current_nodes = next_nodes
