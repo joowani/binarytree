@@ -446,6 +446,7 @@ def inspect(bt):
     else:
         raise ValueError('Expecting a list or a node')
 
+    is_full = True
     is_bst = True
     is_descending = True
     is_ascending = True
@@ -457,7 +458,7 @@ def inspect(bt):
     min_leaf_depth = 0
     current_depth = -1
     current_nodes = [bt]
-
+    
     while current_nodes:
 
         null_encountered = False
@@ -465,6 +466,7 @@ def inspect(bt):
         next_nodes = []
 
         for node in current_nodes:
+            num_of_children = 0
             node_count += 1
             node_value = _value_of(node)
             min_value = min(node_value, min_value)
@@ -478,7 +480,7 @@ def inspect(bt):
                     is_left_padded = False
                 elif child == _null and not null_encountered:
                     null_encountered = True
-
+                    
             if left_child == _null and right_child == _null:
                 if min_leaf_depth == 0:
                     min_leaf_depth = current_depth
@@ -491,6 +493,7 @@ def inspect(bt):
                 elif _value_of(left_child) < node_value:
                     is_ascending = False
                 next_nodes.append(left_child)
+                num_of_children +=1
 
             if right_child != _null:
                 if _value_of(right_child) > node_value:
@@ -499,6 +502,9 @@ def inspect(bt):
                     is_ascending = False
                     is_bst = False
                 next_nodes.append(right_child)
+                num_of_children += 1
+            if num_of_children == 1:
+                is_full = False
 
         current_nodes = next_nodes
 
@@ -516,5 +522,6 @@ def inspect(bt):
         'min_leaf_depth': min_leaf_depth,
         'max_leaf_depth': current_depth,
         'min_value': min_value,
-        'max_value': max_value
+        'max_value': max_value,
+        'is_full': is_full
     }
