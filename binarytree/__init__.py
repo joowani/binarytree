@@ -136,9 +136,7 @@ def _build_tree(values):
     root = _new_node(values[0])
     nodes[0] = root
 
-    index = 1
-    while index < len(values):
-        value = values[index]
+    for index, value in enumerate(values[1:], 1):
         if value != _null:
             parent_index = int((index + 1) / 2) - 1
             parent_node = nodes[parent_index]
@@ -153,7 +151,6 @@ def _build_tree(values):
             else:
                 _add_right(parent_node, child_node)
             nodes[index] = child_node
-        index += 1
 
     return root
 
@@ -458,7 +455,7 @@ def inspect(bt):
     min_leaf_depth = 0
     current_depth = -1
     current_nodes = [bt]
-    
+
     while current_nodes:
 
         null_encountered = False
@@ -480,7 +477,7 @@ def inspect(bt):
                     is_left_padded = False
                 elif child == _null and not null_encountered:
                     null_encountered = True
-                    
+
             if left_child == _null and right_child == _null:
                 if min_leaf_depth == 0:
                     min_leaf_depth = current_depth
