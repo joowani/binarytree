@@ -136,8 +136,8 @@ def _build_tree(values):
     root = _new_node(values[0])
     nodes[0] = root
 
-    for index, value in enumerate(values[1:], 1):
-        if value == _null:
+    for index, value in enumerate(values):
+        if value == _null or index == 0:
             continue
         parent_index = int((index + 1) / 2) - 1
         parent_node = nodes[parent_index]
