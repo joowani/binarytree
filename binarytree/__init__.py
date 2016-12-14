@@ -137,20 +137,21 @@ def _build_tree(values):
     nodes[0] = root
 
     for index, value in enumerate(values[1:], 1):
-        if value != _null:
-            parent_index = int((index + 1) / 2) - 1
-            parent_node = nodes[parent_index]
-            if parent_node == _null:
-                raise ValueError(
-                    'Node missing at index {}'
-                    .format(parent_index)
-                )
-            child_node = _new_node(value)
-            if index % 2:  # is odd
-                _add_left(parent_node, child_node)
-            else:
-                _add_right(parent_node, child_node)
-            nodes[index] = child_node
+        if value == _null:
+            continue
+        parent_index = int((index + 1) / 2) - 1
+        parent_node = nodes[parent_index]
+        if parent_node == _null:
+            raise ValueError(
+                'Node missing at index {}'
+                .format(parent_index)
+            )
+        child_node = _new_node(value)
+        if index % 2:  # is odd
+            _add_left(parent_node, child_node)
+        else:
+            _add_right(parent_node, child_node)
+        nodes[index] = child_node
 
     return root
 
