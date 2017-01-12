@@ -597,7 +597,7 @@ def test_setup():
             left_attr='bar',
             right_attr='baz',
         )
-    assert 'required attribute "value"' in str(err.value)
+    assert 'required attributes "value"' in str(err.value)
 
     with pytest.raises(ValueError) as err:
         setup_node(
@@ -608,7 +608,7 @@ def test_setup():
             left_attr='left',
             right_attr='baz',
         )
-    assert 'required attribute "left"' in str(err.value)
+    assert 'required attributes "left"' in str(err.value)
 
     with pytest.raises(ValueError) as err:
         setup_node(
@@ -619,7 +619,7 @@ def test_setup():
             left_attr='bar',
             right_attr='right',
         )
-    assert 'required attribute "right"' in str(err.value)
+    assert 'required attributes "right"' in str(err.value)
 
     with pytest.raises(ValueError) as err:
         setup_node(
@@ -630,7 +630,7 @@ def test_setup():
             left_attr='bar',
             right_attr='right',
         )
-    assert 'required attribute "right"' in str(err.value)
+    assert 'required attributes "right"' in str(err.value)
 
     with pytest.raises(ValueError) as err:
         setup_node(
