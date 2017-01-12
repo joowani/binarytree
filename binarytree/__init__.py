@@ -159,48 +159,64 @@ def _build_tree(values):
 
 
 def _build_str(node):
-    """Helper function used for pretty-printing."""
+    """Recursive function used for pretty-printing the binary tree.
+
+    In each recursive call, a "box" of characters visually representing the
+    current subtree is constructed line by line. Each line is padded with
+    whitespaces to ensure all lines have the same length. The box, its width,
+    and the start-end positions of its root (used for drawing branches) are
+    sent up to the parent call, which then combines left and right sub-boxes
+    to build a bigger box etc.
+    """
     if node == _null:
-        return 0, 0, 0, []
+        return [], 0, 0, 0
 
     line1 = []
     line2 = []
-    val_len = gap_len = len(str(_value_of(node)))
+    new_root_width = gap_size = len(str(_value_of(node)))
 
-    l_len, l_val_from, l_val_to, l_lines = _build_str(_left_of(node))
-    r_len, r_val_from, r_val_to, r_lines = _build_str(_right_of(node))
+    # Get the left and right sub-boxes, their widths and their root positions
+    l_box, l_box_width, l_root_start, l_root_end = _build_str(_left_of(node))
+    r_box, r_box_width, r_root_start, r_root_end = _build_str(_right_of(node))
 
-    if l_len > 0:
-        l_anchor = -int(-(l_val_from + l_val_to) / 2) + 1  # ceiling
-        line1.append(' ' * (l_anchor + 1))
-        line1.append('_' * (l_len - l_anchor))
-        line2.append(' ' * l_anchor + '/')
-        line2.append(' ' * (l_len - l_anchor))
-        val_from = l_len + 1
-        gap_len += 1
+    # Draw the branch connecting the new root to the left sub-box,
+    # padding with whitespaces where necessary
+    if l_box_width > 0:
+        l_root = -int(-(l_root_start + l_root_end) / 2) + 1  # ceiling
+        line1.append(' ' * (l_root + 1))
+        line1.append('_' * (l_box_width - l_root))
+        line2.append(' ' * l_root + '/')
+        line2.append(' ' * (l_box_width - l_root))
+        new_root_start = l_box_width + 1
+        gap_size += 1
     else:
-        val_from = 0
+        new_root_start = 0
 
+    # Draw the representation of the new root
     line1.append(str(_value_of(node)))
-    line2.append(' ' * val_len)
+    line2.append(' ' * new_root_width)
 
-    if r_len > 0:
-        r_anchor = int((r_val_from + r_val_to) / 2)  # floor
-        line1.append('_' * r_anchor)
-        line1.append(' ' * (r_len - r_anchor + 1))
-        line2.append(' ' * r_anchor + '\\')
-        line2.append(' ' * (r_len - r_anchor))
-        gap_len += 1
-    val_to = val_from + val_len - 1
+    # Draw the branch connecting the new root to the right sub-box,
+    # padding with whitespaces where necessary
+    if r_box_width > 0:
+        r_root = int((r_root_start + r_root_end) / 2)  # floor
+        line1.append('_' * r_root)
+        line1.append(' ' * (r_box_width - r_root + 1))
+        line2.append(' ' * r_root + '\\')
+        line2.append(' ' * (r_box_width - r_root))
+        gap_size += 1
+    new_root_end = new_root_start + new_root_width - 1
 
-    gap = ' ' * gap_len
-    lines = [''.join(line1), ''.join(line2)]
-    for i in range(max(len(l_lines), len(r_lines))):
-        l_line = l_lines[i] if i < len(l_lines) else ' ' * l_len
-        r_line = r_lines[i] if i < len(r_lines) else ' ' * r_len
-        lines.append(l_line + gap + r_line)
+    # Combine the left and right sub-boxes with the branches drawn above
+    gap = ' ' * gap_size
+    new_box = [''.join(line1), ''.join(line2)]
+    for i in range(max(len(l_box), len(r_box))):
+        l_line = l_box[i] if i < len(l_box) else ' ' * l_box_width
+        r_line = r_box[i] if i < len(r_box) else ' ' * r_box_width
+        new_box.append(l_line + gap + r_line)
 
-    return len(lines[0]), val_from, val_to, lines
+    # Return the new box, its width and its root positions
+    return new_box, len(new_box[0]), new_root_start, new_root_end
 
 
 def _bst_insert(root, value):
@@ -313,8 +329,8 @@ def setup(node_class,
     for attribute in [value_attr, left_attr, right_attr]:
         if not hasattr(node, attribute):
             raise ValueError(
-                'The node class does not have a required '
-                'attribute "{}"'.format(attribute)
+                'The node class does not have one of the required '
+                'attributes "{}"'.format(attribute)
             )
     if getattr(node, left_attr) != null_value:
         raise ValueError(
@@ -403,7 +419,7 @@ def stringify(bt):
         _validate_tree(bt)
     else:
         raise ValueError('Expecting a list or a node')
-    return '\n' + '\n'.join(_build_str(bt)[-1])
+    return '\n' + '\n'.join(_build_str(bt)[0])
 
 
 def pprint(bt):
