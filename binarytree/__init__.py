@@ -1,13 +1,18 @@
-import inspect as inspect_
+from inspect import isclass
 from heapq import heapify
 from random import sample, random
 
-_node_init_func = None
+
+def no_op(value):  # pragma: no cover
+    return value
+
+_node_init = no_op
 _node_cls = None
 _null = None
 _left_attr = 'left'
 _right_attr = 'right'
 _value_attr = 'value'
+_id_attr = 'level_order_id'
 
 
 class Node(object):
@@ -23,31 +28,51 @@ class Node(object):
             self.__getattribute__(_value_attr)
         )
 
-    def __str__(self):
-        return stringify(self)
-
-    def to_list(self):
+    def convert(self):
         return convert(self)
 
     def inspect(self):
         return inspect(self)
 
+    def subtree(self, node_id):
+        return subtree(self, node_id)
 
-def _new_node(value):
+    def prune(self, node_id):
+        return prune(self, node_id)
+
+    def leafs(self, values_only=False):
+        return leafs(self, values_only)
+
+    def show(self):
+        show(self)
+
+    def show_ids(self):
+        show_ids(self)
+
+    def show_all(self):
+        show_all(self)
+
+
+def _create_node(value):
     """Create and return a new node."""
-    if _node_init_func is not None:
-        return _node_init_func(value)
+    if _node_init != no_op:
+        return _node_init(value)
     return (_node_cls or Node)(value)
 
 
 def _is_list(obj):
-    """Return True if the object is a list, else False."""
+    """Return ``True`` if the object is a list, else ``False``."""
     return isinstance(obj, list)
 
 
 def _is_node(obj):
-    """Return True if the object is a node, else False."""
+    """Return ``True`` if the object is a node, else ``False``."""
     return isinstance(obj, _node_cls or Node)
+
+
+def _id_of(node):
+    """Return the level-order ID of the node."""
+    return getattr(node, _id_attr)
 
 
 def _value_of(node):
@@ -65,18 +90,40 @@ def _right_of(node):
     return getattr(node, _right_attr)
 
 
-def _add_left(parent, child):
-    """Add the child to the left of the parent."""
-    setattr(parent, _left_attr, child)
+def _set_left(node, child):
+    """Set the child to the left of the node."""
+    setattr(node, _left_attr, child)
 
 
-def _add_right(parent, child):
-    """Add the child to the right of the parent."""
-    setattr(parent, _right_attr, child)
+def _set_right(node, child):
+    """Set the child to the right of the node."""
+    setattr(node, _right_attr, child)
+
+
+def _set_id(node, node_id):
+    """Set the level-order ID of the node."""
+    setattr(node, _id_attr, node_id)
+
+
+def _copy_with_id(node, node_id):
+    """Return a copy of the node with the level-order ID injected."""
+    node_copy = _create_node(_value_of(node))
+    _set_id(node_copy, node_id)
+    return node_copy
+
+
+def _prune_left(node):
+    """Prune the left subtree of the node."""
+    node.__setattr__(_left_attr, _null)
+
+
+def _prune_right(node):
+    """Prune the right subtree of the node."""
+    node.__setattr__(_right_attr, _null)
 
 
 def _is_balanced(node):
-    """Return depth if balanced else -1."""
+    """Return the depth if balanced else -1."""
     if node == _null:
         return 0
 
@@ -89,7 +136,7 @@ def _is_balanced(node):
 
 
 def _build_list(root):
-    """Build a list from a tree and return it"""
+    """Build a list from a tree and return it."""
     result = []
     current_nodes = [root]
     level_not_empty = True
@@ -133,7 +180,7 @@ def _build_tree(values):
     if values[0] == _null:
         raise ValueError('Node missing at index 0')
 
-    root = _new_node(values[0])
+    root = _create_node(values[0])
     nodes[0] = root
 
     index = 1
@@ -147,18 +194,18 @@ def _build_tree(values):
                     'Node missing at index {}'
                     .format(parent_index)
                 )
-            child_node = _new_node(value)
+            child_node = _create_node(value)
             if index % 2:  # is odd
-                _add_left(parent_node, child_node)
+                _set_left(parent_node, child_node)
             else:
-                _add_right(parent_node, child_node)
+                _set_right(parent_node, child_node)
             nodes[index] = child_node
         index += 1
 
     return root
 
 
-def _build_str(node):
+def _build_repr(node, with_ids=False, with_values=True):
     """Recursive function used for pretty-printing the binary tree.
 
     In each recursive call, a "box" of characters visually representing the
@@ -171,13 +218,24 @@ def _build_str(node):
     if node == _null:
         return [], 0, 0, 0
 
+    if with_ids and with_values:
+        node_repr = "{}:{}".format(_id_of(node), _value_of(node))
+    elif with_ids and not with_values:
+        node_repr = str(_id_of(node))
+    elif not with_ids and with_values:
+        node_repr = str(_value_of(node))
+    else:  # pragma: no cover
+        node_repr = "O"
+
     line1 = []
     line2 = []
-    new_root_width = gap_size = len(str(_value_of(node)))
+    new_root_width = gap_size = len(node_repr)
 
     # Get the left and right sub-boxes, their widths and their root positions
-    l_box, l_box_width, l_root_start, l_root_end = _build_str(_left_of(node))
-    r_box, r_box_width, r_root_start, r_root_end = _build_str(_right_of(node))
+    l_box, l_box_width, l_root_start, l_root_end = \
+        _build_repr(_left_of(node), with_ids, with_values)
+    r_box, r_box_width, r_root_start, r_root_end = \
+        _build_repr(_right_of(node), with_ids, with_values)
 
     # Draw the branch connecting the new root to the left sub-box,
     # padding with whitespaces where necessary
@@ -193,7 +251,7 @@ def _build_str(node):
         new_root_start = 0
 
     # Draw the representation of the new root
-    line1.append(str(_value_of(node)))
+    line1.append(node_repr)
     line2.append(' ' * new_root_width)
 
     # Draw the branch connecting the new root to the right sub-box,
@@ -227,13 +285,13 @@ def _bst_insert(root, value):
         if _value_of(node) > value:
             left_child = _left_of(node)
             if left_child == _null:
-                _add_left(node, _new_node(value))
+                _set_left(node, _create_node(value))
                 break
             node = left_child
         else:
             right_child = _right_of(node)
             if right_child == _null:
-                _add_right(node, _new_node(value))
+                _set_right(node, _create_node(value))
                 break
             node = right_child
         depth += 1
@@ -241,24 +299,65 @@ def _bst_insert(root, value):
 
 
 def _random_insert(root, value):
-    """Insert a node randomly into the tree."""
+    """Insert a node randomly into the binary tree."""
     depth = 1
     node = root
     while True:
         if random() < 0.5:
             left_child = _left_of(node)
             if left_child == _null:
-                _add_left(node, _new_node(value))
+                _set_left(node, _create_node(value))
                 break
             node = left_child
         else:
             right_child = _right_of(node)
             if right_child == _null:
-                _add_right(node, _new_node(value))
+                _set_right(node, _create_node(value))
                 break
             node = right_child
         depth += 1
     return depth
+
+
+def _inject_ids(root):
+    """Return a new copy of the tree with node IDs injected."""
+    root_copy = _copy_with_id(root, 0)
+    id_counter = 1
+
+    current_nodes = [root]
+    current_copies = [root_copy]
+
+    while current_nodes:
+        next_nodes = []
+        next_copies = []
+
+        index = 0
+        while index < len(current_nodes):
+            node = current_nodes[index]
+            node_copy = current_copies[index]
+
+            left_child = _left_of(node)
+            right_child = _right_of(node)
+
+            if left_child != _null:
+                next_nodes.append(left_child)
+                left_child_copy = _copy_with_id(left_child, id_counter)
+                _set_left(node_copy, left_child_copy)
+                next_copies.append(left_child_copy)
+                id_counter += 1
+
+            if right_child != _null:
+                next_nodes.append(right_child)
+                right_child_copy = _copy_with_id(right_child, id_counter)
+                _set_right(node_copy, right_child_copy)
+                next_copies.append(right_child_copy)
+                id_counter += 1
+            index += 1
+
+        current_nodes = next_nodes
+        current_copies = next_copies
+
+    return root_copy
 
 
 def _validate_tree(root):
@@ -278,6 +377,25 @@ def _validate_tree(root):
                 raise ValueError('Found an invalid node in the tree')
         current_nodes = next_nodes
 
+    return root
+
+
+def _prepare_tree(bt):
+    """Prepare the binary tree for tree algorithms."""
+    if _is_list(bt):
+        return _build_tree(bt)
+    if _is_node(bt):
+        return _validate_tree(bt)
+    raise ValueError('Expecting a list or a node')
+
+
+def _validate_id(node_id):
+    """Check if the ID is valid."""
+    if not isinstance(node_id, int):
+        raise ValueError('The node ID must be an integer')
+    if node_id < 0:
+        raise ValueError('The node ID must start from 0')
+
 
 def _generate_values(height, multiplier=1):
     """Generate and return a list of random node values."""
@@ -287,35 +405,41 @@ def _generate_values(height, multiplier=1):
     return sample(range(count * multiplier), count)
 
 
-def setup(node_class,
-          node_init_func,
-          null_value,
-          value_attr,
-          left_attr,
-          right_attr):
+def customize(node_class,
+              node_init,
+              null_value,
+              value_attr,
+              left_attr,
+              right_attr):
     """Set up a custom specification for the binary tree node.
 
-    :param node_class: the binary tree node class
-    :param node_init_func: node initializer function which takes the node
-        value as the only argument and returns an instance of node_class
-    :param null_value: the null/sentinel value
-    :param value_attr: the attribute name reserved for the node value
-    :param left_attr: the attribute name reserved for the left child
-    :param right_attr: the attribute name reserved for the right child
-    :raises ValueError: if an invalid set of arguments is given
+    :param node_class: The binary tree node class.
+    :type node_class: type
+    :param node_init: The node initializer function which must take the
+        node value as the only argument and return an instance of node_class.
+    :type node_init: callable
+    :param null_value: The null/sentinel value.
+    :type null_value: object
+    :param value_attr: The attribute name reserved for the node value.
+    :type value_attr: str | unicode
+    :param left_attr: The attribute name reserved for the left child.
+    :type left_attr: str | unicode
+    :param right_attr: The attribute name reserved for the right child.
+    :type right_attr: str | unicode
+    :raises ValueError: If an invalid set of arguments is given.
     """
     global _node_cls
-    global _node_init_func
+    global _node_init
     global _null
     global _value_attr
     global _left_attr
     global _right_attr
 
     # Do some sanity checking on the arguments
-    if not inspect_.isclass(node_class):
+    if not isclass(node_class):
         raise ValueError('Invalid class given for the node')
     try:
-        node = node_init_func(2 if null_value == 1 else 1)
+        node = node_init(2 if null_value == 1 else 1)
     except:
         raise ValueError(
             'The node initializer function must be a callable which '
@@ -344,26 +468,31 @@ def setup(node_class,
             'null/sentinel value "{}" for its right child node attribute '
             '"{}"'.format(null_value, right_attr)
         )
+
     _node_cls = node_class
-    _node_init_func = node_init_func
+    _node_init = node_init
     _null = null_value
     _value_attr = value_attr
     _left_attr = left_attr
     _right_attr = right_attr
 
 
-def tree(height=4, balanced=False):
+def tree(height=4, is_balanced=False):
     """Generate a random binary tree and return its root.
 
-    :param height: the height of the tree (default: 4)
-    :param balanced: whether the tree is weight-balanced (default: False)
-    :return: the root of the generated binary tree
+    :param height: The height of the tree (default: 4).
+    :type height: int
+    :param is_balanced: The tree is weight-balanced (default: ``False``).
+    :type is_balanced: bool
+    :return: The root of the generated binary tree.
+    :rtype: binarytree.Node
+    :raises ValueError: If an invalid binary tree is given.
     """
     values = _generate_values(height)
-    if balanced:
+    if is_balanced:
         return _build_tree(values)
 
-    root = _new_node(values[0])
+    root = _create_node(values[0])
     for index in range(1, len(values)):
         depth = _random_insert(root, values[index])
         if depth == height:
@@ -374,11 +503,14 @@ def tree(height=4, balanced=False):
 def bst(height=4):
     """Generate a random binary search tree and return its root.
 
-    :param height: the height of the tree (default: 4)
-    :return: the root of the generated binary search tree
+    :param height: The height of the tree (default: 4).
+    :type height: int
+    :return: The root node of the generated binary search tree.
+    :rtype: binarytree.Node
+    :raises ValueError: If an invalid binary tree is given.
     """
     values = _generate_values(height)
-    root = _new_node(values[0])
+    root = _create_node(values[0])
     for index in range(1, len(values)):
         depth = _bst_insert(root, values[index])
         if depth == height:
@@ -386,15 +518,19 @@ def bst(height=4):
     return root
 
 
-def heap(height=4, max=False):
+def heap(height=4, is_max=False):
     """Generate a random min/max heap and return its root.
 
-    :param height: the height of the tree (default: 4)
-    :param max: whether to generate a max or min heap
-    :return: the root of the generated heap
+    :param height: The height of the tree (default: 4).
+    :type height: int
+    :param is_max: Whether to generate a max or min heap.
+    :type is_max: bool
+    :return: The root node of the generated heap.
+    :rtype: binarytree.Node
+    :raises ValueError: If an invalid binary tree is given.
     """
     values = _generate_values(height)
-    if max:
+    if is_max:
         negated = [-v for v in values]
         heapify(negated)
         return _build_tree([-v for v in negated])
@@ -403,64 +539,108 @@ def heap(height=4, max=False):
         return _build_tree(values)
 
 
-def stringify(bt):
+def stringify(bt, with_ids=False, with_values=True):
     """Return the string representation of the binary tree.
 
-    :param bt: the binary tree
-    :return: the string representation
+    :param bt: The binary tree.
+    :type bt: list | binarytree.Node
+    :param with_ids: Add level-order IDs into the nodes.
+    :type with_ids: bool
+    :param with_values: Display node values.
+    :type with_values: bool
+    :return: The string representation.
+    :rtype: str | unicode
+    :raises ValueError: If an invalid binary tree is given.
     """
     if bt == _null:
         return ''
-    elif _is_list(bt):
-        if not bt:
-            return ''
-        bt = _build_tree(bt)
-    elif _is_node(bt):
-        _validate_tree(bt)
-    else:
-        raise ValueError('Expecting a list or a node')
-    return '\n' + '\n'.join(_build_str(bt)[0])
+    if _is_list(bt) and not bt:
+        return ''
+
+    bt = _prepare_tree(bt)
+    if with_ids:
+        bt = _inject_ids(bt)
+    return '\n' + '\n'.join(_build_repr(bt, with_ids, with_values)[0])
+
+
+def show(bt):
+    """Pretty print the binary tree (the node values).
+
+    :param bt: The binary tree to pretty-print.
+    :type bt: list | binarytree.Node
+    :return: None
+    :rtype: None
+    :raises ValueError: If an invalid binary tree is given.
+    """
+    print(stringify(bt, with_ids=False, with_values=True))
+
+
+def show_all(bt):
+    """Pretty print the binary tree with both the level-order IDs and values.
+
+    :param bt: The binary tree to pretty-print.
+    :type bt: list | binarytree.Node
+    :return: None
+    :rtype: None
+    :raises ValueError: If an invalid binary tree is given.
+    """
+    print(stringify(bt, with_ids=True, with_values=True))
+
+
+def show_ids(bt):
+    """Pretty print the binary tree showing just the level-order node IDs.
+
+    :param bt: The binary tree to pretty-print.
+    :type bt: list | binarytree.Node
+    :return: None
+    :rtype: None
+    :raises ValueError: If an invalid binary tree is given.
+    """
+    print(stringify(bt, with_ids=True, with_values=False))
 
 
 def pprint(bt):
     """Pretty print the binary tree.
 
-    :param bt: the binary tree to pretty print
-    :raises ValueError: if an invalid tree is given
+    Equivalent to `show`. Still here for backwards compatibility.
+
+    :param bt: The binary tree to pretty-print.
+    :type bt: list | binarytree.Node
+    :return: None
+    :rtype: None
+    :raises ValueError: If an invalid binary tree is given.
     """
-    print(stringify(bt))
+    show(bt)
 
 
 def convert(bt):
     """Convert a binary tree into a list, or vice versa.
 
-    :param bt: the binary tree to convert
-    :return: the converted form of the binary tree
-    :raises ValueError: if an invalid tree is given
+    :param bt: The binary tree to convert.
+    :type bt: list | binarytree.Node
+    :return: The converted form of the binary tree.
+    :rtype: list | binarytree.Node
+    :raises ValueError: If an invalid binary tree is given.
     """
     if bt == _null:
         return []
     if _is_list(bt):
         return _build_tree(bt)
-    elif _is_node(bt):
-        _validate_tree(bt)
-        return _build_list(bt)
+    if _is_node(bt):
+        return _build_list(_validate_tree(bt))
     raise ValueError('Expecting a list or a node')
 
 
 def inspect(bt):
     """Return the properties of the binary tree.
 
-    :param bt: the binary tree to inspect
-    :return: the properties of the binary tree
-    :raises ValueError: if an invalid tree is given
+    :param bt: The binary tree to inspect.
+    :type bt: list | binarytree.Node
+    :return: The various properties of the binary tree.
+    :rtype: dict
+    :raises ValueError: If an invalid binary tree is given.
     """
-    if _is_list(bt):
-        bt = _build_tree(bt)
-    elif _is_node(bt):
-        _validate_tree(bt)
-    else:
-        raise ValueError('Expecting a list or a node')
+    bt = _prepare_tree(bt)
 
     is_full = True
     is_bst = True
@@ -474,7 +654,7 @@ def inspect(bt):
     min_leaf_depth = 0
     current_depth = -1
     current_nodes = [bt]
-    
+
     while current_nodes:
 
         null_encountered = False
@@ -496,7 +676,7 @@ def inspect(bt):
                     is_left_padded = False
                 elif child == _null and not null_encountered:
                     null_encountered = True
-                    
+
             if left_child == _null and right_child == _null:
                 if min_leaf_depth == 0:
                     min_leaf_depth = current_depth
@@ -509,7 +689,7 @@ def inspect(bt):
                 elif _value_of(left_child) < node_value:
                     is_ascending = False
                 next_nodes.append(left_child)
-                num_of_children +=1
+                num_of_children += 1
 
             if right_child != _null:
                 if _value_of(right_child) > node_value:
@@ -541,3 +721,135 @@ def inspect(bt):
         'max_value': max_value,
         'is_full': is_full
     }
+
+
+def subtree(bt, node_id):
+    """Return the node and its children (i.e. subtree) of the level-order ID.
+
+    If the binary tree is given as a list, it is automatically converted
+    into a tree form first.
+
+    :param bt: The binary tree.
+    :type bt: list | binarytree.Node
+    :param node_id: The level-order ID of the node.
+    :type node_id: int
+    :return: The root of the subtree.
+    :rtype: binarytree.Node
+    :raises ValueError: If an invalid binary tree or node ID is given.
+    """
+    bt = _prepare_tree(bt)
+    _validate_id(node_id)
+
+    current_nodes = [bt]
+    current_id = 0
+
+    while current_nodes:
+        next_nodes = []
+
+        for node in current_nodes:
+            if current_id == node_id:
+                return node
+            current_id += 1
+
+            left_child = _left_of(node)
+            right_child = _right_of(node)
+
+            if left_child != _null:
+                next_nodes.append(left_child)
+            if right_child != _null:
+                next_nodes.append(right_child)
+
+        current_nodes = next_nodes
+
+    raise ValueError('Cannot find node with ID {}'.format(node_id))
+
+
+def prune(bt, node_id):
+    """Delete the node and all of its children from the binary tree.
+
+    If the binary tree is given as a list, it is automatically converted
+    into a tree form first.
+
+    :param bt: The binary tree.
+    :type bt: list | binarytree.Node
+    :param node_id: The level-order ID of the node.
+    :type node_id: int
+    :return: The root node of the binary tree with the node pruned.
+    :rtype: binarytree.Node
+    :raises ValueError: If an invalid binary tree or node ID is given.
+    """
+    bt = _prepare_tree(bt)
+    if node_id == 0:
+        raise ValueError('Cannot prune the root node')
+    _validate_id(node_id)
+
+    current_parents = {}
+    current_nodes = [bt]
+    current_id = 0
+
+    while current_nodes:
+        next_nodes = []
+        next_parents = {}
+
+        for node in current_nodes:
+            if current_id == node_id:
+                parent = current_parents[node]
+                if _left_of(parent) == node:
+                    _prune_left(parent)
+                else:
+                    _prune_right(parent)
+                return bt
+
+            left_child = _left_of(node)
+            right_child = _right_of(node)
+
+            if left_child != _null:
+                next_nodes.append(left_child)
+                next_parents[left_child] = node
+            if right_child != _null:
+                next_nodes.append(right_child)
+                next_parents[right_child] = node
+            current_id += 1
+
+        current_nodes = next_nodes
+        current_parents = next_parents
+
+    raise ValueError('Cannot find node with ID {}'.format(node_id))
+
+
+def leafs(bt, values_only=False):
+    """Return the leaf nodes of the binary tree.
+
+    If the binary tree is given as a list, it is automatically converted
+    into a tree form first.
+
+    :param bt: The binary tree.
+    :type bt: list | binarytree.Node
+    :param values_only: Return the node values only rather than the nodes.
+    :type values_only: bool
+    :return: The list of leaf nodes.
+    :rtype: [binarytree.Node] | [int]
+    :raises ValueError: If an invalid binary tree is given.
+    """
+    bt = _prepare_tree(bt)
+
+    current_nodes = [bt]
+    leaf_nodes = []
+
+    while current_nodes:
+        next_nodes = []
+
+        for node in current_nodes:
+            left_child = _left_of(node)
+            right_child = _right_of(node)
+
+            if left_child == _null and right_child == _null:
+                leaf_nodes.append(node)
+            if left_child != _null:
+                next_nodes.append(left_child)
+            if right_child != _null:
+                next_nodes.append(right_child)
+
+        current_nodes = next_nodes
+
+    return [_value_of(n) for n in leaf_nodes] if values_only else leaf_nodes

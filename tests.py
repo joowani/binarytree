@@ -1,4 +1,5 @@
 import sys
+
 try:
     from StringIO import StringIO
 except ImportError:
@@ -14,16 +15,21 @@ from binarytree import (
     tree,
     bst,
     heap,
+    subtree,
+    prune,
+    leafs,
     pprint,
+    show,
+    show_ids,
+    show_all,
     stringify,
-    setup as setup_node,
+    customize,
 )
 
 repetitions = 100
 
 
 class CaptureOutput(list):
-
     def __enter__(self):
         self._orig_stdout = sys.stdout
         self._temp_stdout = StringIO()
@@ -49,6 +55,20 @@ def test_node():
     assert attr(node, 'right') is None
     assert attr(node, 'value') == 1
     assert repr(node) == 'Node(1)'
+
+    node.left = Node(2)
+    node.right = Node(3)
+    assert repr(attr(node, 'left')) == 'Node(2)'
+    assert repr(attr(node, 'right')) == 'Node(3)'
+
+    node.left.left = Node(4)
+    node.left.right = Node(5)
+    node.right.left = Node(6)
+    node.right.right = Node(7)
+    assert repr(attr(node, 'left.left')) == 'Node(4)'
+    assert repr(attr(node, 'left.right')) == 'Node(5)'
+    assert repr(attr(node, 'right.right')) == 'Node(7)'
+    assert repr(attr(node, 'right.left')) == 'Node(6)'
 
 
 @pytest.mark.order2
@@ -83,7 +103,7 @@ def test_tree():
 
     for _ in range(repetitions):
         height = randint(1, 10)
-        root = tree(height, balanced=True)
+        root = tree(height, is_balanced=True)
         nodes_to_visit = [root]
         while nodes_to_visit:
             node = nodes_to_visit.pop()
@@ -161,7 +181,7 @@ def test_heap():
 
     for _ in range(repetitions):
         height = randint(1, 10)
-        root = heap(height, max=True)
+        root = heap(height, is_max=True)
         nodes_to_visit = [root]
         while nodes_to_visit:
             node = nodes_to_visit.pop()
@@ -184,31 +204,30 @@ def test_convert():
     assert convert(None) == []
 
     # Convert trees to lists
-    for convert_func in [convert, lambda node: node.to_list()]:
-
+    for convert_func in [convert, lambda node: node.convert()]:
         root = Node(1)
         assert convert_func(root) == [1]
-    
+
         root.right = Node(3)
         assert convert_func(root) == [1, None, 3]
-    
+
         root.left = Node(2)
         assert convert_func(root) == [1, 2, 3]
-    
+
         root.left.right = Node(4)
         assert convert_func(root) == [1, 2, 3, None, 4]
-    
+
         root.right.left = Node(5)
         assert convert_func(root) == [1, 2, 3, None, 4, 5]
-        
+
         root.right.right = Node(6)
         assert convert_func(root) == [1, 2, 3, None, 4, 5, 6]
-    
+
         root.right.right = Node(None)
         with pytest.raises(ValueError) as err:
-            assert convert_func(root)
+            convert_func(root)
         assert str(err.value) == 'A node cannot have a null value'
-    
+
         root.right.right = {}
         with pytest.raises(ValueError) as err:
             assert convert_func(root)
@@ -267,7 +286,6 @@ def test_inspect():
         return target.inspect()
 
     for inspect_func in [inspect, convert_inspect, self_inspect]:
-
         root = Node(1)
         assert inspect_func(root) == {
             'is_height_balanced': True,
@@ -291,7 +309,7 @@ def test_inspect():
             'is_max_heap': False,
             'is_min_heap': True,
             'is_bst': False,
-            'is_full' : False,
+            'is_full': False,
             'height': 1,
             'max_value': 2,
             'min_value': 1,
@@ -307,7 +325,7 @@ def test_inspect():
             'is_max_heap': False,
             'is_min_heap': True,
             'is_bst': False,
-            'is_full' : True,
+            'is_full': True,
             'height': 1,
             'max_value': 3,
             'min_value': 1,
@@ -325,7 +343,7 @@ def test_inspect():
             'is_max_heap': False,
             'is_min_heap': False,
             'is_bst': True,
-            'is_full' : True,
+            'is_full': True,
             'height': 1,
             'max_value': 3,
             'min_value': 1,
@@ -344,7 +362,7 @@ def test_inspect():
             'is_max_heap': False,
             'is_min_heap': False,
             'is_bst': False,
-            'is_full' : False,
+            'is_full': False,
             'height': 2,
             'max_value': 4,
             'min_value': 1,
@@ -360,7 +378,7 @@ def test_inspect():
             'is_max_heap': False,
             'is_min_heap': True,
             'is_bst': False,
-            'is_full' : True,
+            'is_full': True,
             'height': 2,
             'max_value': 5,
             'min_value': 1,
@@ -376,7 +394,7 @@ def test_inspect():
             'is_max_heap': False,
             'is_min_heap': False,
             'is_bst': False,
-            'is_full' : False,
+            'is_full': False,
             'height': 2,
             'max_value': 6,
             'min_value': 1,
@@ -397,73 +415,456 @@ def test_inspect():
         assert str(err.value) == 'Found an invalid node in the tree'
 
 
-def test_print():
+def test_show():
+    def convert_show(target):
+        show(convert(target))
 
-    def convert_print(target):
-        print(convert(target))
-
-    def convert_pprint(target):
-        pprint(convert(target))
+    def convert_self_show(target):
+        convert(target).show()
 
     for invalid_argument in [1, 'foo']:
         with pytest.raises(ValueError) as err:
-            pprint(invalid_argument)
+            show(invalid_argument)
         assert str(err.value) == 'Expecting a list or a node'
 
-    for print_func in [pprint, convert_pprint]:
+    for show_func in [pprint, show, convert_show]:
         with CaptureOutput() as output:
-            print_func([])
+            show_func([])
         assert output == ['']
 
-    for print_func in [convert_print, pprint, convert_pprint]:
+    for show_func in [pprint, show, convert_show, convert_self_show]:
         with CaptureOutput() as output:
-            print_func([1, 2])
-        assert output == ['', '  1', ' / ', '2  ', '   ']
+            show_func([1, 2])
+        assert output == ['',
+                          '  1',
+                          ' / ',
+                          '2  ',
+                          '   '
+                          ]
 
         with CaptureOutput() as output:
-            print_func([1, None, 3])
-        assert output == ['', '1  ', ' \\ ', '  3', '   ']
+            show_func([1, None, 3])
+        assert output == ['',
+                          '1  ',
+                          ' \\ ',
+                          '  3',
+                          '   '
+                          ]
 
         with CaptureOutput() as output:
-            print_func([1, 2, 3])
-        assert output == ['', '  1  ', ' / \\ ', '2   3', '     ']
+            show_func([1, 2, 3])
+        assert output == ['',
+                          '  1  ',
+                          ' / \\ ',
+                          '2   3',
+                          '     '
+                          ]
 
         with CaptureOutput() as output:
-            print_func([1, 2, 3, None, 5])
-        assert output == [
-            '', '  __1  ', ' /   \\ ', '2     3',
-            ' \\     ', '  5    ', '       '
-        ]
+            show_func([1, 2, 3, None, 5])
+        assert output == ['',
+                          '  __1  ',
+                          ' /   \\ ',
+                          '2     3',
+                          ' \\     ',
+                          '  5    ',
+                          '       '
+                          ]
         with CaptureOutput() as output:
-            print_func([1, 2, 3, None, 5, 6])
-        assert output == [
-            '', '  __1__  ', ' /     \\ ',
-            '2       3', ' \\     / ',
-            '  5   6  ', '         '
-        ]
+            show_func([1, 2, 3, None, 5, 6])
+        assert output == ['',
+                          '  __1__  ',
+                          ' /     \\ ',
+                          '2       3',
+                          ' \\     / ',
+                          '  5   6  ',
+                          '         '
+                          ]
         with CaptureOutput() as output:
-            print_func([1, 2, 3, None, 5, 6, 7])
-        assert output == [
-            '', '  __1__    ', ' /     \\   ',
-            '2       3  ', ' \\     / \\ ',
-            '  5   6   7', '           '
-        ]
+            show_func([1, 2, 3, None, 5, 6, 7])
+        assert output == ['',
+                          '  __1__    ',
+                          ' /     \\   ',
+                          '2       3  ',
+                          ' \\     / \\ ',
+                          '  5   6   7',
+                          '           '
+                          ]
         with CaptureOutput() as output:
-            print_func([1, 2, 3, 8, 5, 6, 7])
-        assert output == [
-            '', '    __1__    ', '   /     \\   ',
-            '  2       3  ', ' / \\     / \\ ',
-            '8   5   6   7', '             '
-        ]
+            show_func([1, 2, 3, 8, 5, 6, 7])
+        assert output == ['',
+                          '    __1__    ',
+                          '   /     \\   ',
+                          '  2       3  ',
+                          ' / \\     / \\ ',
+                          '8   5   6   7',
+                          '             '
+                          ]
+
     for _ in range(repetitions):
         bt = tree(height=10)
-        with CaptureOutput() as output1:
-            print(bt)
-        assert output1 == str(bt).splitlines()
-        assert output1 == stringify(bt).splitlines()
+        with CaptureOutput() as output:
+            show(bt)
+        assert output == stringify(bt).splitlines()
 
 
-def test_setup():
+def test_show_ids():
+    def convert_show_ids(target):
+        show_ids(convert(target))
+
+    def convert_self_show_ids(target):
+        convert(target).show_ids()
+
+
+    for invalid_argument in [1, 'foo']:
+        with pytest.raises(ValueError) as err:
+            show_ids(invalid_argument)
+        assert str(err.value) == 'Expecting a list or a node'
+
+    for show_func in [show_ids, convert_show_ids]:
+        with CaptureOutput() as output:
+            show_func([])
+        assert output == ['']
+
+    for show_func in [show_ids, convert_show_ids, convert_self_show_ids]:
+        with CaptureOutput() as output:
+            show_func([1, 2])
+        assert output == ['',
+                          '  0',
+                          ' / ',
+                          '1  ',
+                          '   '
+                          ]
+
+        with CaptureOutput() as output:
+            show_func([1, None, 3])
+        assert output == ['',
+                          '0  ',
+                          ' \\ ',
+                          '  1',
+                          '   '
+                          ]
+
+        with CaptureOutput() as output:
+            show_func([1, 2, 3])
+        assert output == ['',
+                          '  0  ',
+                          ' / \\ ',
+                          '1   2',
+                          '     '
+                          ]
+
+        with CaptureOutput() as output:
+            show_func([1, 2, 3, None, 5])
+
+        assert output == ['',
+                          '  __0  ',
+                          ' /   \\ ',
+                          '1     2',
+                          ' \\     ',
+                          '  3    ',
+                          '       '
+                          ]
+        with CaptureOutput() as output:
+            show_func([1, 2, 3, None, 5, 6])
+        assert output == ['',
+                          '  __0__  ',
+                          ' /     \\ ',
+                          '1       2',
+                          ' \\     / ',
+                          '  3   4  ',
+                          '         '
+                          ]
+        with CaptureOutput() as output:
+            show_func([1, 2, 3, None, 5, 6, 7])
+        assert output == ['',
+                          '  __0__    ',
+                          ' /     \\   ',
+                          '1       2  ',
+                          ' \\     / \\ ',
+                          '  3   4   5',
+                          '           '
+                          ]
+        with CaptureOutput() as output:
+            show_func([1, 2, 3, 8, 5, 6, 7])
+        assert output == ['',
+                          '    __0__    ',
+                          '   /     \\   ',
+                          '  1       2  ',
+                          ' / \\     / \\ ',
+                          '3   4   5   6',
+                          '             '
+                          ]
+
+    for _ in range(repetitions):
+        bt = tree(height=10)
+        with CaptureOutput() as output:
+            show_ids(bt)
+        assert output == stringify(bt, True, False).splitlines()
+
+
+def test_show_all():
+    def convert_show_all(target):
+        show_all(convert(target))
+
+    def convert_self_show_all(target):
+        convert(target).show_all()
+
+    for invalid_argument in [1, 'foo']:
+        with pytest.raises(ValueError) as err:
+            show_all(invalid_argument)
+        assert str(err.value) == 'Expecting a list or a node'
+
+    for show_func in [show_all, convert_show_all]:
+        with CaptureOutput() as output:
+            show_func([])
+        assert output == ['']
+
+    for show_func in [show_all, convert_show_all, convert_self_show_all]:
+        with CaptureOutput() as output:
+            show_func([1, 2])
+        assert output == ['',
+                          '   _0:1',
+                          '  /    ',
+                          '1:2    ',
+                          '       '
+                          ]
+
+        with CaptureOutput() as output:
+            show_func([1, None, 3])
+        assert output == ['',
+                          '0:1_   ',
+                          '    \\  ',
+                          '    1:3',
+                          '       '
+                          ]
+
+        with CaptureOutput() as output:
+            show_func([1, 2, 3])
+        assert output == ['',
+                          '   _0:1_   ',
+                          '  /     \\  ',
+                          '1:2     2:3',
+                          '           '
+                          ]
+
+        with CaptureOutput() as output:
+            show_func([1, 2, 3, None, 5])
+        assert output == ['',
+                          '   _____0:1_   ',
+                          '  /         \\  ',
+                          '1:2_        2:3',
+                          '    \\          ',
+                          '    3:5        ',
+                          '               '
+                          ]
+
+        with CaptureOutput() as output:
+            show_func([1, 2, 3, None, 5, 6])
+        assert output == ['',
+                          '   _____0:1_____   ',
+                          '  /             \\  ',
+                          '1:2_           _2:3',
+                          '    \\         /    ',
+                          '    3:5     4:6    ',
+                          '                   '
+                          ]
+        with CaptureOutput() as output:
+            show_func([1, 2, 3, None, 5, 6, 7])
+        assert output == ['',
+                          '   _____0:1_____       ',
+                          '  /             \\      ',
+                          '1:2_           _2:3_   ',
+                          '    \\         /     \\  ',
+                          '    3:5     4:6     5:7',
+                          '                       '
+                          ]
+        with CaptureOutput() as output:
+            show_func([1, 2, 3, 8, 5, 6, 7])
+        assert output == ['',
+                          '       _____0:1_____       ',
+                          '      /             \\      ',
+                          '   _1:2_           _2:3_   ',
+                          '  /     \\         /     \\  ',
+                          '3:8     4:5     5:6     6:7',
+                          '                           '
+                          ]
+    for _ in range(repetitions):
+        bt = tree(height=10)
+        with CaptureOutput() as output:
+            show_all(bt)
+        assert output == stringify(bt, True, True).splitlines()
+
+
+def test_subtree():
+
+    def self_subtree(target, node_id):
+        return target.subtree(node_id)
+
+    for invalid_tree in ['foo', -1, None]:
+        with pytest.raises(ValueError) as err:
+            subtree(invalid_tree, 0)
+        assert str(err.value) == 'Expecting a list or a node'
+
+    for subtree_func in [subtree, self_subtree]:
+        root = Node(1)
+
+        for invalid_id in ['foo', None]:
+            with pytest.raises(ValueError) as err:
+                subtree_func(root, invalid_id)
+            assert str(err.value) == 'The node ID must be an integer'
+
+        with pytest.raises(ValueError) as err:
+            subtree_func(root, -1)
+        assert str(err.value) == 'The node ID must start from 0'
+
+        assert subtree_func(root, 0) == root
+        for invalid_id in [1, 2, 3, 4, 5]:
+            with pytest.raises(ValueError) as err:
+                subtree_func(root, invalid_id)
+            assert str(err.value) == \
+                'Cannot find node with ID {}'.format(invalid_id)
+
+        root.left = Node(2)
+        assert subtree_func(root, 0) == root
+        assert subtree_func(root, 1) == root.left
+        for invalid_id in [2, 3, 4, 5]:
+            with pytest.raises(ValueError) as err:
+                subtree_func(root, invalid_id)
+            assert str(err.value) == \
+                'Cannot find node with ID {}'.format(invalid_id)
+
+        root.right = Node(3)
+        assert subtree_func(root, 0) == root
+        assert subtree_func(root, 1) == root.left
+        assert subtree_func(root, 2) == root.right
+        for invalid_id in [3, 4, 5]:
+            with pytest.raises(ValueError) as err:
+                subtree_func(root, invalid_id)
+            assert str(err.value) == \
+                'Cannot find node with ID {}'.format(invalid_id)
+
+        root.left.right = Node(4)
+        assert subtree_func(root, 0) == root
+        assert subtree_func(root, 1) == root.left
+        assert subtree_func(root, 2) == root.right
+        assert subtree_func(root, 3) == root.left.right
+        for invalid_id in [4, 5]:
+            with pytest.raises(ValueError) as err:
+                subtree_func(root, invalid_id)
+            assert str(err.value) == \
+                'Cannot find node with ID {}'.format(invalid_id)
+
+        root.left.left = Node(5)
+        assert subtree_func(root, 0) == root
+        assert subtree_func(root, 1) == root.left
+        assert subtree_func(root, 2) == root.right
+        assert subtree_func(root, 3) == root.left.left
+        assert subtree_func(root, 4) == root.left.right
+        for invalid_id in [5, 6]:
+            with pytest.raises(ValueError) as err:
+                subtree_func(root, invalid_id)
+            assert str(err.value) == \
+                'Cannot find node with ID {}'.format(invalid_id)
+
+
+def test_prune():
+
+    def self_prune(target, node_id):
+        return target.prune(node_id)
+
+    for invalid_tree in ['foo', -1, None]:
+        with pytest.raises(ValueError) as err:
+            prune(invalid_tree, 0)
+        assert str(err.value) == 'Expecting a list or a node'
+
+    for prune_func in [prune, self_prune]:
+        root = Node(1)
+
+        for bad_id in ['foo', None]:
+            with pytest.raises(ValueError) as err:
+                prune_func(root, bad_id)
+            assert str(err.value) == 'The node ID must be an integer'
+
+        with pytest.raises(ValueError) as err:
+            prune_func(root, -1)
+        assert str(err.value) == 'The node ID must start from 0'
+
+        with pytest.raises(ValueError) as err:
+            prune_func(root, 0)
+        assert str(err.value) == 'Cannot prune the root node'
+
+        with pytest.raises(ValueError) as err:
+            prune_func(root, 10)
+        assert str(err.value) == 'Cannot find node with ID 10'
+
+        root.left = Node(2)
+        assert prune_func(root, 1) == root
+        assert root.left is None
+
+        root.left = Node(2)
+        root.right = Node(3)
+        assert prune_func(root, 1) == root
+        assert root.left is None
+        assert attr(root, 'right.value') == 3
+
+        root.left = Node(2)
+        root.right = Node(3)
+        root.left.left = Node(4)
+        root.left.right = Node(5)
+        root.left.right.left = Node(6)
+        root.left.right.right = Node(7)
+
+        assert prune_func(root.left.right, 2) == root.left.right
+        assert attr(root, 'left.right.right') is None
+
+        assert prune_func(root, 4) == root
+        assert attr(root, 'left.right') is None
+
+        assert prune_func(root, 1) == root
+        assert attr(root, 'left') is None
+        assert attr(root, 'right.value') == 3
+
+        assert prune_func(root, 1) == root
+        assert attr(root, 'right') is None
+
+
+def test_leafs():
+
+    def self_leafs(target, values_only):
+        return target.leafs(values_only)
+
+    def to_set(nodes):
+        return set(attr(node, 'value') for node in nodes)
+
+    for invalid_tree in ['foo', -1, None]:
+        with pytest.raises(ValueError) as err:
+            leafs(invalid_tree)
+        assert str(err.value) == 'Expecting a list or a node'
+
+    for leafs_func in [leafs, self_leafs]:
+        root = Node(1)
+        assert set(leafs_func(root, True)) == {1}
+        assert to_set(leafs_func(root, False)) == {1}
+
+        root.left = Node(2)
+        assert set(leafs_func(root, True)) == {2}
+        assert to_set(leafs_func(root, False)) == {2}
+
+        root.right = Node(3)
+        assert set(leafs_func(root, True)) == {2, 3}
+        assert to_set(leafs_func(root, False)) == {2, 3}
+
+        root.left.left = Node(4)
+        assert set(leafs_func(root, True)) == {3, 4}
+        assert to_set(leafs_func(root, False)) == {3, 4}
+
+        root.left.right = Node(5)
+        assert set(leafs_func(root, True)) == {3, 4, 5}
+        assert to_set(leafs_func(root, False)) == {3, 4, 5}
+
+
+def test_customize():
     null = -1
 
     class GoodNode(Node):
@@ -487,8 +888,8 @@ def test_setup():
             self.bar = bar
             self.baz = baz
 
-    setup_node(
-        node_init_func=lambda v: GoodNode(v),
+    customize(
+        node_init=lambda v: GoodNode(v),
         node_class=GoodNode,
         null_value=null,
         value_attr='foo',
@@ -521,8 +922,8 @@ def test_setup():
                 assert isinstance(right, GoodNode)
                 nodes_to_visit.append(right)
 
-    setup_node(
-        node_init_func=lambda v: GoodNode(v),
+    customize(
+        node_init=lambda v: GoodNode(v),
         node_class=GoodNode,
         null_value=null,
         value_attr='foo',
@@ -556,8 +957,8 @@ def test_setup():
                 nodes_to_visit.append(right)
 
     with pytest.raises(ValueError) as err:
-        setup_node(
-            node_init_func=lambda v: BadNode1(v),
+        customize(
+            node_init=lambda v: BadNode1(v),
             node_class=None,
             null_value=-1,
             value_attr='foo',
@@ -567,8 +968,8 @@ def test_setup():
     assert 'Invalid class given' in str(err.value)
 
     with pytest.raises(ValueError) as err:
-        setup_node(
-            node_init_func=None,
+        customize(
+            node_init=None,
             node_class=BadNode1,
             null_value=-1,
             value_attr='foo',
@@ -578,8 +979,8 @@ def test_setup():
     assert 'function must be a callable' in str(err.value)
 
     with pytest.raises(ValueError) as err:
-        setup_node(
-            node_init_func=lambda v: GoodNode(v),
+        customize(
+            node_init=lambda v: GoodNode(v),
             node_class=BadNode1,
             null_value=-1,
             value_attr='foo',
@@ -589,8 +990,8 @@ def test_setup():
     assert 'returns an instance of "BadNode1"' in str(err.value)
 
     with pytest.raises(ValueError) as err:
-        setup_node(
-            node_init_func=lambda v: GoodNode(v),
+        customize(
+            node_init=lambda v: GoodNode(v),
             node_class=GoodNode,
             null_value=-1,
             value_attr='value',
@@ -600,8 +1001,8 @@ def test_setup():
     assert 'required attributes "value"' in str(err.value)
 
     with pytest.raises(ValueError) as err:
-        setup_node(
-            node_init_func=lambda v: GoodNode(v),
+        customize(
+            node_init=lambda v: GoodNode(v),
             node_class=GoodNode,
             null_value=-1,
             value_attr='foo',
@@ -611,8 +1012,8 @@ def test_setup():
     assert 'required attributes "left"' in str(err.value)
 
     with pytest.raises(ValueError) as err:
-        setup_node(
-            node_init_func=lambda v: GoodNode(v),
+        customize(
+            node_init=lambda v: GoodNode(v),
             node_class=GoodNode,
             null_value=-1,
             value_attr='foo',
@@ -622,8 +1023,8 @@ def test_setup():
     assert 'required attributes "right"' in str(err.value)
 
     with pytest.raises(ValueError) as err:
-        setup_node(
-            node_init_func=lambda v: GoodNode(v),
+        customize(
+            node_init=lambda v: GoodNode(v),
             node_class=GoodNode,
             null_value=-1,
             value_attr='foo',
@@ -633,8 +1034,8 @@ def test_setup():
     assert 'required attributes "right"' in str(err.value)
 
     with pytest.raises(ValueError) as err:
-        setup_node(
-            node_init_func=lambda v: BadNode2(v, -2),
+        customize(
+            node_init=lambda v: BadNode2(v, -2),
             node_class=BadNode2,
             null_value=-1,
             value_attr='foo',
@@ -642,13 +1043,13 @@ def test_setup():
             right_attr='baz',
         )
     assert (
-        'expected null/sentinel value "-1" for its '
-        'left child node attribute "bar"'
-    ) in str(err.value)
+               'expected null/sentinel value "-1" for its '
+               'left child node attribute "bar"'
+           ) in str(err.value)
 
     with pytest.raises(ValueError) as err:
-        setup_node(
-            node_init_func=lambda v: BadNode2(v, -1, -2),
+        customize(
+            node_init=lambda v: BadNode2(v, -1, -2),
             node_class=BadNode2,
             null_value=-1,
             value_attr='foo',
@@ -656,6 +1057,6 @@ def test_setup():
             right_attr='baz',
         )
     assert (
-        'expected null/sentinel value "-1" for its '
-        'right child node attribute "baz"'
-    ) in str(err.value)
+               'expected null/sentinel value "-1" for its '
+               'right child node attribute "baz"'
+           ) in str(err.value)

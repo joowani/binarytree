@@ -27,7 +27,7 @@ BinaryTree: Python Library for Learning Binary Trees
 
 |
 
-.. image:: https://cloud.githubusercontent.com/assets/2701938/19216253/5063b602-8d82-11e6-9f54-977bee2147a0.gif
+.. image:: https://user-images.githubusercontent.com/2701938/29019910-161f6cda-7b15-11e7-8bfb-49ea0a4179f9.gif
     :alt: Demo GIF
 
 Introduction
@@ -35,9 +35,9 @@ Introduction
 
 Are you studying binary trees for your next exam, assignment or technical interview?
 
-**BinaryTree** is a minimal Python library which provides you with a simple API
-to generate, visualize and inspect binary trees so you can skip the tedious
-work of mocking up test trees, and dive right into practising your algorithms!
+**BinaryTree** is a minimal Python library which gives you a simple API to
+generate, visualize and inspect binary trees so you can skip the tedious
+work of mocking up test objects and dive right into practising your algorithms!
 Heaps and BSTs (binary search trees) are also supported.
 
 
@@ -55,8 +55,7 @@ To install the latest version directly from GitHub_:
 
 .. code-block:: bash
 
-    ~$ git clone https://github.com/joowani/binarytree.git
-    ~$ python binarytree/setup.py install
+    ~$ pip install -e git+git@github.com:joowani/binarytree.git@master#egg=binarytree
 
 You may need to use ``sudo`` depending on your environment setup.
 
@@ -79,25 +78,25 @@ By default, **BinaryTree** uses the following class to represent a tree node:
             self.right = None
 
 
-Generate and pretty-print all kinds of binary trees:
+Generate and pretty-print various types of binary trees:
 
 .. code-block:: python
 
-    from binarytree import tree, bst, heap, pprint
+    from binarytree import tree, bst, heap, show
 
     # Generate a random binary tree and return its root
-    my_tree = tree(height=5, balanced=False)
+    my_tree = tree(height=5, is_balanced=False)
 
-    # Generate a random BST and return its root
+    # Generate a random binary search tree (BST) and return its root
     my_bst = bst(height=5)
 
     # Generate a random max heap and return its root
-    my_heap = heap(height=3, max=True)
+    my_heap = heap(height=3, is_max=True)
 
-    # Pretty print the trees in stdout
-    pprint(my_tree)
-    pprint(my_bst)
-    pprint(my_heap)
+    # Pretty-print the trees in stdout
+    show(my_tree)
+    show(my_bst)
+    show(my_heap)
 
 
 `List representations`_ are supported as well:
@@ -109,7 +108,7 @@ Generate and pretty-print all kinds of binary trees:
 .. code-block:: python
 
     from heapq import heapify
-    from binarytree import tree, convert, pprint
+    from binarytree import tree, convert, show
 
     my_list = [7, 3, 2, 6, 9, 4, 1, 5, 8]
 
@@ -124,7 +123,7 @@ Generate and pretty-print all kinds of binary trees:
     my_list = convert(my_tree)
 
     # Pretty-printing also works on lists
-    pprint(my_list)
+    show(my_list)
 
 
 Inspect a tree to quickly see its various properties:
@@ -148,13 +147,14 @@ Inspect a tree to quickly see its various properties:
     print(result['is_min_heap'])
     print(result['is_height_balanced'])
     print(result['is_weight_balanced'])
+    print(result['is_full'])
 
 
-Import the `Node` class and build your own trees:
+Use the `binarytree.Node` class to build your own trees:
 
 .. code-block:: python
 
-    from binarytree import Node, pprint
+    from binarytree import Node, show
 
     root = Node(1)
     root.left = Node(2)
@@ -162,15 +162,15 @@ Import the `Node` class and build your own trees:
     root.left.left = Node(4)
     root.left.right = Node(5)
 
-    pprint(root)
+    show(root)
 
 
-If the default `Node` class does not meet your requirements, you can define
-and use your own custom node specification:
+If the default `binarytree.Node` class does not meet your requirements, you can
+define and use your own custom node specification:
 
 .. code-block:: python
 
-    from binarytree import Node, setup, tree, pprint
+    from binarytree import Node, customize, tree, show
 
     # Define your own null/sentinel value
     my_null = -1
@@ -183,9 +183,9 @@ and use your own custom node specification:
             self.l_child = left
             self.r_child = right
 
-    # Call setup in the beginning to apply your specification
-    setup(
-        node_init_func=lambda v: MyNode(v, my_null, my_null),
+    # Call customize in the beginning of your code to apply your specification
+    customize(
+        node_init=lambda val: MyNode(val, my_null, my_null),
         node_class=MyNode,
         null_value=my_null,
         value_attr='data',
@@ -193,4 +193,46 @@ and use your own custom node specification:
         right_attr='r_child'
     )
     my_custom_tree = tree()
-    pprint(my_custom_tree)
+    show(my_custom_tree)
+
+
+**New in 2.0.0**: Utility functions you can play around with:
+
+.. code-block:: python
+
+    from binarytree import tree, show_ids, show_all, subtree, prune, leafs
+
+    my_tree = tree(height=5, is_balanced=False)
+
+    # Show the level-order node IDs instead of values
+    show_ids(my_tree)
+
+    # Show both the node IDs and the values
+    show_all(my_tree)
+
+    # Return the root of the subtree by its level-order ID
+    subtree(my_tree, node_id=2)
+
+    # Prune a node (and its children) by its level-order ID
+    prune(my_tree, node_id=1)
+
+    # Return the leaf nodes of the tree
+    leafs(my_tree, values_only=True)
+
+
+**New in 2.0.0**: The default `binarytree.Node` class comes with additional goodies:
+
+.. code-block:: python
+
+    from binarytree import tree
+
+    my_tree = tree(height=5, is_balanced=False)
+
+    # If you want to use these methods in your own custom class, your class
+    # will have to inherit from the default binarytree.Node class
+    my_tree.inspect()
+    my_tree.show()
+    my_tree.leafs()
+    my_tree.subtree(node_id=2).show()
+    my_tree.subtree(node_id=1).convert()
+    my_tree.prune(node_id=1).show_all()
