@@ -8,19 +8,26 @@ _null = None
 _left_attr = 'left'
 _right_attr = 'right'
 _value_attr = 'value'
+_id_attr = 'id'
+emitted_ids = []
 
 
 class Node(object):
-    """Represents a binary tree node."""
-
+    """Represents a binary tree node."""    
+    
     def __init__(self, value):
         self.__setattr__(_value_attr, value)
         self.__setattr__(_left_attr, _null)
         self.__setattr__(_right_attr, _null)
-
+        self.__setattr__(_id_attr, _get_id())
+#        self.right = None
+#        self.left = None
+#        self.value = value
+#        self.number = _get_id()
+        
     def __repr__(self):
         return 'Node({})'.format(
-            self.__getattribute__(_value_attr)
+            self.__getattribute__(_value_attr)            
         )
 
     def __str__(self):
@@ -39,6 +46,15 @@ def _new_node(value):
         return _node_init_func(value)
     return (_node_cls or Node)(value)
 
+def _get_id():
+    """Generates uniques IDs for nodes in a tree"""    
+    if len(emitted_ids)==0:
+        ID = 1
+        emitted_ids.append(ID)        
+    else:
+        ID = max(emitted_ids)+1
+        emitted_ids.append(ID)
+    return(ID)
 
 def _is_list(obj):
     """Return True if the object is a list, else False."""
@@ -63,8 +79,15 @@ def _left_of(node):
 def _right_of(node):
     """Return the right child of the node."""
     return getattr(node, _right_attr)
+    
+def _id_of(node):
+    """Return the id of the node."""
+    return getattr(node, _id_attr)
 
-
+def _add_id(node):
+    """Add the child to the left of the parent."""
+    setattr(node, _id_attr, _get_id())
+    
 def _add_left(parent, child):
     """Add the child to the left of the parent."""
     setattr(parent, _left_attr, child)
@@ -73,6 +96,126 @@ def _add_left(parent, child):
 def _add_right(parent, child):
     """Add the child to the right of the parent."""
     setattr(parent, _right_attr, child)
+    
+def pruneLeft(node):
+    """Prunes the left subtree of a node."""
+    node.__setattr__(_left_attr, _null)
+        
+def pruneRight(node):
+    """Prunes the right subtree of a node."""
+    node.__setattr__(_right_attr, _null)
+
+def getParentNode(root,nodeId):
+    """Recovers the parent node from a given node, if exists"""    
+    current_nodes = [root]
+    level_not_empty = True
+    while level_not_empty:
+        level_not_empty = False
+        next_nodes = []
+        for node in current_nodes:
+            if node.left != _null:
+                level_not_empty = True
+                next_nodes.append(node.left)
+                if node.left.id == nodeId:
+                    return node
+            if node.right != _null:
+                level_not_empty = True                
+                next_nodes.append(node.right) 
+                if node.right.id == nodeId:
+                    return node            
+        current_nodes = next_nodes                
+    return
+    
+def getNodeById(root,nodeId):
+    """Recovers a node by his unique ID"""
+    current_nodes = [root]
+    level_not_empty = True
+    while level_not_empty:
+        level_not_empty = False
+        next_nodes = []
+        for node in current_nodes:
+            
+            if node == _null:
+                next_nodes.append(_null)
+                next_nodes.append(_null)
+            else:
+                if node.id == nodeId :
+                    return node
+                left_child = _left_of(node)
+                right_child = _right_of(node)
+
+                if left_child != _null:
+                    level_not_empty = True
+                if right_child != _null:
+                    level_not_empty = True
+
+                next_nodes.append(left_child)
+                next_nodes.append(right_child)
+
+        current_nodes = next_nodes
+    
+def delete(root,nodeId):
+    """Delete a node of a given Id and cleans references to it in the parent node"""
+    current_nodes = [root]
+    level_not_empty = True
+    while level_not_empty:
+        level_not_empty = False
+        next_nodes = []
+        for node in current_nodes:
+            if node == _null:
+                next_nodes.append(_null)
+                next_nodes.append(_null)
+            else:
+                h1 = 0
+                h2 = 0
+                if node.left != None:
+                    h1 = node.left.id
+                if node.right != None:
+                    h2 = node.right.id
+                if h1 == nodeId :
+                    pruneLeft(node)
+                    return
+                if h2 == nodeId :
+                    pruneRight(node)
+                    return
+                left_child = _left_of(node)
+                right_child = _right_of(node)
+
+                if left_child != _null:
+                    level_not_empty = True
+                if right_child != _null:
+                    level_not_empty = True
+                next_nodes.append(left_child)
+                next_nodes.append(right_child)
+        current_nodes = next_nodes
+    return
+   
+def get_leafs(root):
+    """returns leafs from  a given tree with given root"""
+    leafs = []
+    current_nodes = [root]
+    level_not_empty = True
+    while level_not_empty:
+        level_not_empty = False
+        next_nodes = []
+        for node in current_nodes:
+            if node == _null:
+                next_nodes.append(_null)
+                next_nodes.append(_null)
+            else: 
+                left_child = _left_of(node)
+                right_child = _right_of(node)
+                if left_child != _null:
+                    level_not_empty = True
+                if right_child != _null:
+                    level_not_empty = True
+                if left_child == _null and right_child == _null :
+                    leafs.append(node)
+                next_nodes.append(left_child)
+                next_nodes.append(right_child)
+        current_nodes = next_nodes  
+
+    return leafs
 
 
 def _is_balanced(node):
@@ -292,7 +435,8 @@ def setup(node_class,
           null_value,
           value_attr,
           left_attr,
-          right_attr):
+          right_attr,
+          id_attr):
     """Set up a custom specification for the binary tree node.
 
     :param node_class: the binary tree node class
@@ -310,6 +454,7 @@ def setup(node_class,
     global _value_attr
     global _left_attr
     global _right_attr
+    global _id_attr
 
     # Do some sanity checking on the arguments
     if not inspect_.isclass(node_class):
@@ -344,12 +489,20 @@ def setup(node_class,
             'null/sentinel value "{}" for its right child node attribute '
             '"{}"'.format(null_value, right_attr)
         )
+    if getattr(node, id_attr) != null_value:
+        raise ValueError(
+            'The node class does not initialize instances with expected '
+            'null/sentinel value "{}" for its right child node attribute '
+            '"{}"'.format(null_value, id_attr)
+        )
+        
     _node_cls = node_class
     _node_init_func = node_init_func
     _null = null_value
     _value_attr = value_attr
     _left_attr = left_attr
     _right_attr = right_attr
+    _id_attr = id_attr
 
 
 def tree(height=4, balanced=False):
@@ -541,3 +694,4 @@ def inspect(bt):
         'max_value': max_value,
         'is_full': is_full
     }
+    
