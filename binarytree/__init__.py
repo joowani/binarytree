@@ -9,25 +9,18 @@ _left_attr = 'left'
 _right_attr = 'right'
 _value_attr = 'value'
 _id_attr = 'id'
-emitted_ids = []
-
 
 class Node(object):
-    """Represents a binary tree node."""    
-    
+    """Represents a binary tree node."""
     def __init__(self, value):
         self.__setattr__(_value_attr, value)
         self.__setattr__(_left_attr, _null)
         self.__setattr__(_right_attr, _null)
-        self.__setattr__(_id_attr, _get_id())
-#        self.right = None
-#        self.left = None
-#        self.value = value
-#        self.number = _get_id()
-        
+        self.__setattr__(_id_attr, id(self))
+
     def __repr__(self):
         return 'Node({})'.format(
-            self.__getattribute__(_value_attr)            
+            self.__getattribute__(_value_attr)
         )
 
     def __str__(self):
@@ -45,16 +38,6 @@ def _new_node(value):
     if _node_init_func is not None:
         return _node_init_func(value)
     return (_node_cls or Node)(value)
-
-def _get_id():
-    """Generates uniques IDs for nodes in a tree"""    
-    if len(emitted_ids)==0:
-        ID = 1
-        emitted_ids.append(ID)        
-    else:
-        ID = max(emitted_ids)+1
-        emitted_ids.append(ID)
-    return(ID)
 
 def _is_list(obj):
     """Return True if the object is a list, else False."""
@@ -79,15 +62,15 @@ def _left_of(node):
 def _right_of(node):
     """Return the right child of the node."""
     return getattr(node, _right_attr)
-    
+
 def _id_of(node):
     """Return the id of the node."""
     return getattr(node, _id_attr)
 
 def _add_id(node):
-    """Add the child to the left of the parent."""
+    """Add id to a node."""
     setattr(node, _id_attr, _get_id())
-    
+
 def _add_left(parent, child):
     """Add the child to the left of the parent."""
     setattr(parent, _left_attr, child)
@@ -96,17 +79,17 @@ def _add_left(parent, child):
 def _add_right(parent, child):
     """Add the child to the right of the parent."""
     setattr(parent, _right_attr, child)
-    
-def pruneLeft(node):
+
+def prune_left(node):
     """Prunes the left subtree of a node."""
     node.__setattr__(_left_attr, _null)
-        
-def pruneRight(node):
+
+def prune_right(node):
     """Prunes the right subtree of a node."""
     node.__setattr__(_right_attr, _null)
 
-def getParentNode(root,nodeId):
-    """Recovers the parent node from a given node, if exists"""    
+def get_parent_node(root, nodeId):
+    """Recovers the parent node from a given node, if exists"""
     current_nodes = [root]
     level_not_empty = True
     while level_not_empty:
@@ -119,14 +102,13 @@ def getParentNode(root,nodeId):
                 if node.left.id == nodeId:
                     return node
             if node.right != _null:
-                level_not_empty = True                
-                next_nodes.append(node.right) 
+                level_not_empty = True
+                next_nodes.append(node.right)
                 if node.right.id == nodeId:
-                    return node            
-        current_nodes = next_nodes                
-    return
-    
-def getNodeById(root,nodeId):
+                    return node
+        current_nodes = next_nodes
+
+def get_node_by_id(root, nodeId):
     """Recovers a node by his unique ID"""
     current_nodes = [root]
     level_not_empty = True
@@ -134,7 +116,7 @@ def getNodeById(root,nodeId):
         level_not_empty = False
         next_nodes = []
         for node in current_nodes:
-            
+
             if node == _null:
                 next_nodes.append(_null)
                 next_nodes.append(_null)
@@ -153,7 +135,7 @@ def getNodeById(root,nodeId):
                 next_nodes.append(right_child)
 
         current_nodes = next_nodes
-    
+
 def delete(root,nodeId):
     """Delete a node of a given Id and cleans references to it in the parent node"""
     current_nodes = [root]
@@ -173,10 +155,10 @@ def delete(root,nodeId):
                 if node.right != None:
                     h2 = node.right.id
                 if h1 == nodeId :
-                    pruneLeft(node)
+                    prune_left(node)
                     return
                 if h2 == nodeId :
-                    pruneRight(node)
+                    prune_right(node)
                     return
                 left_child = _left_of(node)
                 right_child = _right_of(node)
@@ -189,7 +171,7 @@ def delete(root,nodeId):
                 next_nodes.append(right_child)
         current_nodes = next_nodes
     return
-   
+
 def get_leafs(root):
     """returns leafs from  a given tree with given root"""
     leafs = []
@@ -202,7 +184,7 @@ def get_leafs(root):
             if node == _null:
                 next_nodes.append(_null)
                 next_nodes.append(_null)
-            else: 
+            else:
                 left_child = _left_of(node)
                 right_child = _right_of(node)
                 if left_child != _null:
@@ -213,7 +195,7 @@ def get_leafs(root):
                     leafs.append(node)
                 next_nodes.append(left_child)
                 next_nodes.append(right_child)
-        current_nodes = next_nodes  
+        current_nodes = next_nodes
 
     return leafs
 
@@ -492,10 +474,10 @@ def setup(node_class,
     if getattr(node, id_attr) != null_value:
         raise ValueError(
             'The node class does not initialize instances with expected '
-            'null/sentinel value "{}" for its right child node attribute '
+            'null/sentinel value "{}" for its ID attribute '
             '"{}"'.format(null_value, id_attr)
         )
-        
+
     _node_cls = node_class
     _node_init_func = node_init_func
     _null = null_value
@@ -627,7 +609,7 @@ def inspect(bt):
     min_leaf_depth = 0
     current_depth = -1
     current_nodes = [bt]
-    
+
     while current_nodes:
 
         null_encountered = False
@@ -649,7 +631,7 @@ def inspect(bt):
                     is_left_padded = False
                 elif child == _null and not null_encountered:
                     null_encountered = True
-                    
+
             if left_child == _null and right_child == _null:
                 if min_leaf_depth == 0:
                     min_leaf_depth = current_depth
@@ -694,4 +676,3 @@ def inspect(bt):
         'max_value': max_value,
         'is_full': is_full
     }
-    
