@@ -128,11 +128,29 @@ def _is_balanced(node):
         return 0
 
     left = _is_balanced(_left_of(node))
-    right = _is_balanced(_right_of(node))
-
-    if left < 0 or right < 0 or abs(left - right) > 1:
+    if left < 0:
         return -1
+
+    right = _is_balanced(_right_of(node))
+    if right < 0 or abs(left - right) > 1:
+        return -1
+
     return max(left, right) + 1
+
+
+def _is_bst(node, min_val=float('-inf'), max_val=float('inf')):
+    """Return True if and only if the tree is a binary search tree."""
+    if node == _null:
+        return True
+
+    if (min_val != _null and _value_of(node) <= min_val):
+        return False
+
+    if (max_val != _null and _value_of(node) >= max_val):
+        return False
+
+    return _is_bst(_left_of(node), min_val, _value_of(node)) and \
+           _is_bst(_right_of(node), _value_of(node), max_val)
 
 
 def _build_list(root):
@@ -643,7 +661,6 @@ def inspect(bt):
     bt = _prepare_tree(bt)
 
     is_full = True
-    is_bst = True
     is_descending = True
     is_ascending = True
     is_left_padded = True
@@ -685,7 +702,6 @@ def inspect(bt):
             if left_child != _null:
                 if _value_of(left_child) > node_value:
                     is_descending = False
-                    is_bst = False
                 elif _value_of(left_child) < node_value:
                     is_ascending = False
                 next_nodes.append(left_child)
@@ -696,7 +712,6 @@ def inspect(bt):
                     is_descending = False
                 elif _value_of(right_child) < node_value:
                     is_ascending = False
-                    is_bst = False
                 next_nodes.append(right_child)
                 num_of_children += 1
             if num_of_children == 1:
@@ -711,7 +726,7 @@ def inspect(bt):
         'is_weight_balanced': is_balanced,
         'is_max_heap': is_descending and is_left_padded and is_balanced,
         'is_min_heap': is_ascending and is_left_padded and is_balanced,
-        'is_bst': is_bst,
+        'is_bst': _is_bst(bt),
         'height': current_depth,
         'leaf_count': leaf_count,
         'node_count': node_count,
