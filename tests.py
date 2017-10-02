@@ -11,6 +11,8 @@ import pytest
 from binarytree import (
     Node,
     convert,
+    get_level,
+    get_levels,
     inspect,
     tree,
     bst,
@@ -54,12 +56,15 @@ def test_node():
     assert attr(node, 'left') is None
     assert attr(node, 'right') is None
     assert attr(node, 'value') == 1
+    assert attr(node, 'parent') is None
     assert repr(node) == 'Node(1)'
 
     node.left = Node(2)
     node.right = Node(3)
     assert repr(attr(node, 'left')) == 'Node(2)'
     assert repr(attr(node, 'right')) == 'Node(3)'
+    assert attr(node.left, 'parent') == node
+    assert attr(node.right, 'parent') == node
 
     node.left.left = Node(4)
     node.left.right = Node(5)
@@ -69,6 +74,18 @@ def test_node():
     assert repr(attr(node, 'left.right')) == 'Node(5)'
     assert repr(attr(node, 'right.right')) == 'Node(7)'
     assert repr(attr(node, 'right.left')) == 'Node(6)'
+    assert attr(node.left.left, 'parent') == node.left
+    assert attr(node.left.right, 'parent') == node.left
+    assert attr(node.right.left, 'parent') == node.right
+    assert attr(node.right.right, 'parent') == node.right
+
+    assert node.is_root() is True
+    assert node.left.is_root() is False
+    assert node.left.right.is_leaf() is True
+    assert node.is_leaf() is False
+
+    assert node.level() == 0
+    assert node.right.level() == 1
 
 
 @pytest.mark.order2
@@ -271,6 +288,36 @@ def test_convert():
     assert attr(bt, 'left.right') is None
     assert attr(bt, 'right.left') is None
     assert attr(bt, 'right.right') is None
+
+
+def test_get_levels():
+    for invalid_argument in [None, 1, 'foo']:
+        with pytest.raises(ValueError) as err:
+            get_levels(invalid_argument)
+        assert str(err.value) == 'Expecting a list or a node'
+    assert str(get_levels(convert([0, 1, 2]))) == '[[Node(0)], [Node(1), Node(2)]]'
+    assert str(get_levels(convert([0, 1, 2]), show_values=True)) == '[[0], [1, 2]]'
+    assert str(get_levels(convert([0, 1]), show_values=True, show_nulls=True))\
+        == '[[0], [1, None]]'
+
+
+def test_get_level():
+    for invalid_argument in [None, 1, 'foo']:
+        with pytest.raises(ValueError) as err:
+            get_level(invalid_argument, 0)
+        assert str(err.value) == 'Expecting a list or a node'
+    for invalid_argument in [None, -1, 'foo']:
+        with pytest.raises(ValueError) as err:
+            get_level(convert([0, 1, 2]), invalid_argument)
+        assert str(err.value) == 'Requested level must be a non-negative integer.'
+    with pytest.raises(ValueError) as err:
+        get_level(convert([0, 1, 2]), 2)
+    assert str(err.value) == 'Requested level not present in tree.'
+
+    assert str(get_level(convert([0, 1, 2]), 1)) == '[Node(1), Node(2)]'
+    assert str(get_level(convert([0, 1, 2]), 1, show_values=True)) == '[1, 2]'
+    assert str(get_level(convert([0, 1, 2, 3]), 2, show_values=True, show_nulls=True))\
+        == '[3, None, None, None]'
 
 
 def test_inspect():
@@ -514,7 +561,6 @@ def test_show_ids():
 
     def convert_self_show_ids(target):
         convert(target).show_ids()
-
 
     for invalid_argument in [1, 'foo']:
         with pytest.raises(ValueError) as err:

@@ -6,11 +6,13 @@ from random import sample, random
 def no_op(value):  # pragma: no cover
     return value
 
+
 _node_init = no_op
 _node_cls = None
 _null = None
 _left_attr = 'left'
 _right_attr = 'right'
+_parent_attr = 'parent'
 _value_attr = 'value'
 _id_attr = 'level_order_id'
 
@@ -18,15 +20,27 @@ _id_attr = 'level_order_id'
 class Node(object):
     """Represents a binary tree node."""
 
-    def __init__(self, value):
+    def __init__(self, value, parent=_null):
         self.__setattr__(_value_attr, value)
         self.__setattr__(_left_attr, _null)
         self.__setattr__(_right_attr, _null)
+        if parent is not _null and isinstance(parent, Node):
+            self.__setattr__(_parent_attr, parent)
+        else:
+            self.__setattr__(_parent_attr, _null)
 
     def __repr__(self):
         return 'Node({})'.format(
             self.__getattribute__(_value_attr)
         )
+
+    def __setattr__(self, name, value):
+        # Magically set the parent to self when a child is created
+        if (name in [_left_attr, _right_attr]
+                and value is not _null
+                and isinstance(value, Node)):
+            value.parent = self
+        object.__setattr__(self, name, value)
 
     def convert(self):
         return convert(self)
@@ -40,8 +54,17 @@ class Node(object):
     def prune(self, node_id):
         return prune(self, node_id)
 
+    def is_root(self):
+        return self.parent is _null
+
+    def is_leaf(self):
+        return self.right is _null and self.left is _null
+
     def leafs(self, values_only=False):
         return leafs(self, values_only)
+
+    def level(self):
+        return 0 if self.parent == _null else self.parent.level() + 1
 
     def show(self):
         show(self)
@@ -53,11 +76,11 @@ class Node(object):
         show_all(self)
 
 
-def _create_node(value):
+def _create_node(value, parent=_null):
     """Create and return a new node."""
     if _node_init != no_op:
         return _node_init(value)
-    return (_node_cls or Node)(value)
+    return (_node_cls or Node)(value, parent=parent)
 
 
 def _is_list(obj):
@@ -78,6 +101,11 @@ def _id_of(node):
 def _value_of(node):
     """Return the value of the node."""
     return getattr(node, _value_attr)
+
+
+def _parent_of(node):
+    """Return the parent of the node."""
+    return getattr(node, _parent_attr)
 
 
 def _left_of(node):
@@ -107,7 +135,7 @@ def _set_id(node, node_id):
 
 def _copy_with_id(node, node_id):
     """Return a copy of the node with the level-order ID injected."""
-    node_copy = _create_node(_value_of(node))
+    node_copy = _create_node(_value_of(node), parent=_parent_of(node))
     _set_id(node_copy, node_id)
     return node_copy
 
@@ -198,7 +226,7 @@ def _build_tree(values):
     if values[0] == _null:
         raise ValueError('Node missing at index 0')
 
-    root = _create_node(values[0])
+    root = _create_node(values[0], parent=_null)
     nodes[0] = root
 
     index = 1
@@ -212,7 +240,7 @@ def _build_tree(values):
                     'Node missing at index {}'
                     .format(parent_index)
                 )
-            child_node = _create_node(value)
+            child_node = _create_node(value, parent=parent_node)
             if index % 2:  # is odd
                 _set_left(parent_node, child_node)
             else:
@@ -303,13 +331,13 @@ def _bst_insert(root, value):
         if _value_of(node) > value:
             left_child = _left_of(node)
             if left_child == _null:
-                _set_left(node, _create_node(value))
+                _set_left(node, _create_node(value, parent=node))
                 break
             node = left_child
         else:
             right_child = _right_of(node)
             if right_child == _null:
-                _set_right(node, _create_node(value))
+                _set_right(node, _create_node(value, parent=node))
                 break
             node = right_child
         depth += 1
@@ -324,13 +352,13 @@ def _random_insert(root, value):
         if random() < 0.5:
             left_child = _left_of(node)
             if left_child == _null:
-                _set_left(node, _create_node(value))
+                _set_left(node, _create_node(value, parent=node))
                 break
             node = left_child
         else:
             right_child = _right_of(node)
             if right_child == _null:
-                _set_right(node, _create_node(value))
+                _set_right(node, _create_node(value, parent=node))
                 break
             node = right_child
         depth += 1
@@ -647,6 +675,106 @@ def convert(bt):
     if _is_node(bt):
         return _build_list(_validate_tree(bt))
     raise ValueError('Expecting a list or a node')
+
+
+def get_level(bt, level, show_values=False, show_nulls=False):
+    """Return the requested level of the binary tree, ordered from left to right.
+
+    If a node other than the root node is passed in, then this function
+    returns the requested level of the tree relative to the passed in node.
+
+    :param bt: The binary tree.
+    :type bt: binarytree.Node
+    :param level: The requested level to return.
+    :type level: int
+    :param show_values: whether to convert nodes to values before returning.
+    :type show_values: boolean
+    :param show_nulls: whether to show where empty nodes are.
+    :type show_nulls: boolean
+    :return: dictionary of form {0:[rootnode], 1:[1st, level, nodes]}
+    :rtype: dictionary
+    """
+    bt = _prepare_tree(bt)
+    if not isinstance(level, int) or level < 0:
+        raise ValueError("Requested level must be a non-negative integer.")
+    current_nodes = [bt]
+    current_level = 0
+
+    while current_level < level:
+        next_nodes = []
+        index = 0
+
+        while index < len(current_nodes):
+            node = current_nodes[index]
+            left_child = _left_of(node)
+            right_child = _right_of(node)
+
+            if left_child != _null:
+                next_nodes.append(left_child)
+            elif show_nulls is True:
+                next_nodes.append(Node(_null))
+            if right_child != _null:
+                next_nodes.append(right_child)
+            elif show_nulls is True:
+                next_nodes.append(Node(_null))
+            index += 1
+
+        if len(next_nodes) == 0 or all(node.value is _null for node in next_nodes):
+            raise ValueError("Requested level not present in tree.")
+        current_nodes = next_nodes
+        current_level += 1
+
+    return [node.value for node in current_nodes] if show_values else current_nodes
+
+
+def get_levels(bt, show_values=False, show_nulls=False):
+    """Return the levels of the binary tree, ordered from left to right.
+
+    If a node other than the root node is passed in, then this function
+    returns the levels of the tree relative to the passed in node.
+
+    :param bt: The binary tree.
+    :type bt: binarytree.Node
+    :param show_values: whether to convert nodes to values before returning.
+    :type show_values: boolean
+    :param show_nulls: whether to show where empty nodes are.
+    :type show_nulls: boolean
+    :return: dictionary of form {0:[rootnode], 1:[1st, level, nodes]}
+    :rtype: dictionary
+    """
+    bt = _prepare_tree(bt)
+
+    current_nodes = [bt]
+    levels = []
+    current_level = 0
+
+    while len(current_nodes) != 0 and not all(node.value is _null for node in current_nodes):
+        levels.append(current_nodes)
+        next_nodes = []
+        index = 0
+
+        while index < len(current_nodes):
+            node = current_nodes[index]
+            left_child = _left_of(node)
+            right_child = _right_of(node)
+
+            if left_child != _null:
+                next_nodes.append(left_child)
+            elif show_nulls is True:
+                next_nodes.append(_create_node(_null))
+            if right_child != _null:
+                next_nodes.append(right_child)
+            elif show_nulls is True:
+                next_nodes.append(_create_node(_null))
+            index += 1
+
+        current_nodes = next_nodes
+        current_level += 1
+
+    if show_values is True:
+        for level in range(len(levels)):
+            levels[level] = [node.value for node in levels[level]]
+    return levels
 
 
 def inspect(bt):
