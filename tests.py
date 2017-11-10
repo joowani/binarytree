@@ -84,6 +84,14 @@ def test_node():
     assert node.left.right.is_leaf() is True
     assert node.is_leaf() is False
 
+    assert node.left.is_child_of(node) is True
+    assert node.right.is_child_of(node) is True
+    assert node.is_child_of(node) is False
+    assert node.left.is_left_child_of(node) is True
+    assert node.right.is_left_child_of(node) is False
+    assert node.right.is_right_child_of(node) is True
+    assert node.left.is_right_child_of(node) is False
+
     assert node.level() == 0
     assert node.right.level() == 1
 
@@ -288,6 +296,43 @@ def test_convert():
     assert attr(bt, 'left.right') is None
     assert attr(bt, 'right.left') is None
     assert attr(bt, 'right.right') is None
+
+
+def test_setitem():
+    node = Node(1)
+    node.left = Node(2)
+    node.right = Node(3)
+    with pytest.raises(ValueError):
+        node[2] = 5
+    with pytest.raises(ValueError):
+        node[0] = Node(1)
+    with pytest.raises(ValueError):
+        node[-1] = Node(1)
+    with pytest.raises(ValueError):
+        node[3.14] = Node(1)
+    node[1] = Node(11)
+    node[2] = Node(12)
+    node[3] = Node(13)
+    node[4] = Node(15)
+    with pytest.raises(IndexError):
+        node[12] = Node(17)
+
+
+def test_getitem():
+    node = Node(1)
+    node.left = Node(2)
+    node.right = Node(3)
+    assert node[0] == node
+    assert node[1] == node.left
+    assert node[2] == node.right
+    with pytest.raises(ValueError):
+        node[-1]
+    with pytest.raises(IndexError):
+        node[3]
+    with pytest.raises(ValueError):
+        node[3.14]
+    with pytest.raises(ValueError):
+        node[None]
 
 
 def test_get_levels():
@@ -587,7 +632,7 @@ def test_show_ids():
         assert output == ['',
                           '0  ',
                           ' \\ ',
-                          '  1',
+                          '  2',
                           '   '
                           ]
 
@@ -608,7 +653,7 @@ def test_show_ids():
                           ' /   \\ ',
                           '1     2',
                           ' \\     ',
-                          '  3    ',
+                          '  4    ',
                           '       '
                           ]
         with CaptureOutput() as output:
@@ -618,7 +663,7 @@ def test_show_ids():
                           ' /     \\ ',
                           '1       2',
                           ' \\     / ',
-                          '  3   4  ',
+                          '  4   5  ',
                           '         '
                           ]
         with CaptureOutput() as output:
@@ -628,7 +673,7 @@ def test_show_ids():
                           ' /     \\   ',
                           '1       2  ',
                           ' \\     / \\ ',
-                          '  3   4   5',
+                          '  4   5   6',
                           '           '
                           ]
         with CaptureOutput() as output:
@@ -681,7 +726,7 @@ def test_show_all():
         assert output == ['',
                           '0:1_   ',
                           '    \\  ',
-                          '    1:3',
+                          '    2:3',
                           '       '
                           ]
 
@@ -701,7 +746,7 @@ def test_show_all():
                           '  /         \\  ',
                           '1:2_        2:3',
                           '    \\          ',
-                          '    3:5        ',
+                          '    4:5        ',
                           '               '
                           ]
 
@@ -712,7 +757,7 @@ def test_show_all():
                           '  /             \\  ',
                           '1:2_           _2:3',
                           '    \\         /    ',
-                          '    3:5     4:6    ',
+                          '    4:5     5:6    ',
                           '                   '
                           ]
         with CaptureOutput() as output:
@@ -722,7 +767,7 @@ def test_show_all():
                           '  /             \\      ',
                           '1:2_           _2:3_   ',
                           '    \\         /     \\  ',
-                          '    3:5     4:6     5:7',
+                          '    4:5     5:6     6:7',
                           '                       '
                           ]
         with CaptureOutput() as output:

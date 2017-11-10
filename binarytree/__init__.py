@@ -42,6 +42,12 @@ class Node(object):
             value.parent = self
         object.__setattr__(self, name, value)
 
+    def __getitem__(self, index):
+        return _get_node_with_id(self, index)
+
+    def __setitem__(self, index, value):
+        return _set_node_with_id(self, index, value)
+
     def convert(self):
         return convert(self)
 
@@ -59,6 +65,15 @@ class Node(object):
 
     def is_leaf(self):
         return self.right is _null and self.left is _null
+
+    def is_child_of(self, parent):
+        return self.parent is parent
+
+    def is_left_child_of(self, parent):
+        return self is _left_of(parent)
+
+    def is_right_child_of(self, parent):
+        return self is _right_of(parent)
 
     def leafs(self, values_only=False):
         return leafs(self, values_only)
@@ -390,14 +405,14 @@ def _inject_ids(root):
                 left_child_copy = _copy_with_id(left_child, id_counter)
                 _set_left(node_copy, left_child_copy)
                 next_copies.append(left_child_copy)
-                id_counter += 1
+            id_counter += 1
 
             if right_child != _null:
                 next_nodes.append(right_child)
                 right_child_copy = _copy_with_id(right_child, id_counter)
                 _set_right(node_copy, right_child_copy)
                 next_copies.append(right_child_copy)
-                id_counter += 1
+            id_counter += 1
             index += 1
 
         current_nodes = next_nodes
@@ -449,6 +464,126 @@ def _generate_values(height, multiplier=1):
         raise ValueError('Height must be a non-negative integer')
     count = 2 ** (height + 1) - 1
     return sample(range(count * multiplier), count)
+
+
+def _get_node_with_id(root, index):
+    """Calculate index in the tree relative to the root node
+
+    :param root: The root node of the tree
+    :type: Node
+    :param index: index of the node to replace
+    :type: Int
+    """
+    root = _prepare_tree(root)
+    if not isinstance(index, int) or index < 0:
+        raise ValueError("Requested id must be a non-negative integer.")
+    current_nodes = [root]
+    current_id = -1
+    current_index = 0
+
+    while current_nodes and current_id < index:
+        next_nodes = []
+        current_index = 0
+
+        while current_index < len(current_nodes) and current_id < index:
+            node = current_nodes[current_index]
+            if node is not _null:
+                left_child = _left_of(node)
+                right_child = _right_of(node)
+            else:
+                left_child = _null
+                right_child = _null
+
+            if left_child != _null:
+                next_nodes.append(left_child)
+            else:
+                next_nodes.append(_null)
+            if right_child != _null:
+                next_nodes.append(right_child)
+            else:
+                next_nodes.append(_null)
+            current_index += 1
+            current_id += 1
+        current_nodes = next_nodes
+
+    if node is _null:
+        raise IndexError("Requested node id not present in tree.")
+    return node
+
+
+def _get_parent_of_node_with_id(root, index):
+    """Get the index in the tree of the parent of a node.
+    Used for setting new nodes with the setitem method.
+
+    :param root: The root node of the tree
+    :type: Node
+    :param index: index of the node whose parent you're looking for
+    :type: Int
+    """
+    root = _prepare_tree(root)
+    current_nodes = [root]
+    current_id = 0
+    current_index = 0
+
+    while current_nodes and current_id <= index:
+        next_nodes = []
+        current_index = 0
+
+        while current_index < len(current_nodes) and current_id <= index:
+            node = current_nodes[current_index]
+            if _is_node(node):
+                left_child = _left_of(node)
+                right_child = _right_of(node)
+            else:
+                left_child = _null
+                right_child = _null
+
+            if left_child != _null:
+                next_nodes.append(left_child)
+            elif _is_node(node):
+                next_nodes.append((current_id, 'left'))
+            else:
+                next_nodes.append(_null)
+            if right_child != _null:
+                next_nodes.append(right_child)
+            elif _is_node(node):
+                next_nodes.append((current_id, 'right'))
+            else:
+                next_nodes.append(_null)
+            current_index += 1
+            current_id += 1
+        current_nodes = next_nodes
+
+    if node is _null:
+        raise IndexError("Requested node id's parent not present in tree.")
+    elif _is_node(node):
+        return _parent_of(node), 'right' if node.is_right_child_of(_parent_of(node)) else 'left'
+    else:
+        return _get_node_with_id(root, node[0]), node[1]
+
+
+def _set_node_with_id(root, index, value):
+    """Set the node with the given id with the passed in value
+
+    :param root: The root node of the tree
+    :type: Node
+    :param index: index of the node to replace
+    :type: Int
+    :param value: New node to replace the node at the given index
+    :type: Node
+    """
+    if not _is_node(value):
+        raise ValueError("Value must be of type Node.")
+    if not isinstance(index, int) or index < 0:
+        raise ValueError("Index must be a positive integer.")
+    elif index == 0:
+        raise ValueError("Cannot replace root node of tree. "
+                         "Index must be a positive integer.")
+    parent, left_or_right = _get_parent_of_node_with_id(root, index)
+    if left_or_right is 'right':
+        _set_right(parent, value)
+    else:
+        _set_left(parent, value)
 
 
 def customize(node_class,
