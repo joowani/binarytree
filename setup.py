@@ -1,15 +1,18 @@
 from setuptools import setup, find_packages
 
+import binarytree
+
 setup(
     name='binarytree',
     description='Python Library for Learning Binary Trees',
-    version='2.0.1',
+    version=binarytree.__version__,
     author='Joohwan Oh',
     author_email='joohwan.oh@outlook.com',
     url='https://github.com/joowani/binarytree',
     packages=find_packages(),
     include_package_data=True,
-    tests_require=['pytest'],
+    tests_require=['pytest', 'flake8'],
+    license='MIT',
     classifiers=[
         'Intended Audience :: Developers',
         'Intended Audience :: End Users/Desktop',

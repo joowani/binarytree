@@ -10,8 +10,11 @@ install:
     - pip install pytest
     - pip install pytest-cov
     - pip install python-coveralls
+    - pip install flake8
     - python setup.py install
 script:
-    - py.test --cov-report= --cov=binarytree tests.py
+    - python -m flake8 binarytree/__init__.py
+    - python -m doctest binarytree/__init__.py
+    - py.test tests.py --cov=binarytree
 after_success:
     - coveralls
