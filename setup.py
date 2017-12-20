@@ -1,11 +1,11 @@
 from setuptools import setup, find_packages
 
-import binarytree
+from binarytree.version import __version__
 
 setup(
     name='binarytree',
     description='Python Library for Learning Binary Trees',
-    version=binarytree.__version__,
+    version=__version__,
     author='Joohwan Oh',
     author_email='joohwan.oh@outlook.com',
     url='https://github.com/joowani/binarytree',

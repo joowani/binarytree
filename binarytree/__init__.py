@@ -1,6 +1,5 @@
 from __future__ import absolute_import, unicode_literals, division
 
-__version__ = '3.0.0'
 __all__ = ['Node', 'tree', 'bst', 'heap', 'build']
 
 import heapq
