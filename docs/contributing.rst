@@ -35,7 +35,7 @@ following requirements:
 
         ~$ git checkout dev
         ~$ git fetch origin
-        ~$ git reset --hard origin/dev  # THIS WILL WIPE AL LOCAL CHANGES
+        ~$ git reset --hard origin/dev  # THIS WILL WIPE ALL LOCAL CHANGES
 
 Style
 =====
@@ -57,7 +57,7 @@ Testing
 =======
 
 To test your changes, run the unit tests that come with **binarytree** on your
-local machine. The tests use pytest_.
+local machine. The tests are written using pytest_.
 
 To run the unit tests:
 
