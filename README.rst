@@ -73,10 +73,15 @@ To install the latest version directly from GitHub_:
 
     ~$ pip install -e git+git@github.com:joowani/binarytree.git@master#egg=binarytree
 
+To install in Arch Linux with a PKGBUILD:
+
+- Arch Linux (AUR) : Archlinux_
+
 You may need to use ``sudo`` depending on your environment setup.
 
 .. _PyPi: https://pypi.python.org/pypi/binarytree
 .. _GitHub: https://github.com/joowani/binarytree
+.. _Archlinux: https://aur.archlinux.org/packages/python-binarytree/
 
 
 Getting Started
