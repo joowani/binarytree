@@ -83,7 +83,6 @@ You may need to use ``sudo`` depending on your environment setup.
 .. _GitHub: https://github.com/joowani/binarytree
 .. _PKGBUILD: https://aur.archlinux.org/packages/python-binarytree/
 
-
 Getting Started
 ===============
 
