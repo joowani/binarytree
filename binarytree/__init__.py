@@ -376,8 +376,8 @@ class Node(object):
 
         .. note::
 
-            To include `level-order (breadth-first)`_ indexes in the string, use
-            :func:`binarytree.Node.pprint` instead.
+            To include `level-order (breadth-first)`_ indexes in the string,
+            use :func:`binarytree.Node.pprint` instead.
 
         .. _level-order (breadth-first):
             https://en.wikipedia.org/wiki/Tree_traversal#Breadth-first_search
@@ -1599,10 +1599,10 @@ def build(values):
     node values and/or None's in breadth-first order) and return its root.
 
     :param values: The list representation (i.e. a list of node values and/or
-        None's in breadth-first order). If a node has an index i, its left child
-        is at index 2i + 1, right child at index 2i + 2, and parent at index
-        floor((i - 1) / 2). None signifies the absence of a node. See example
-        below for an illustration.
+        None's in breadth-first order). If a node has an index i, its left
+        child is at index 2i + 1, right child at index 2i + 2, and parent at
+        index floor((i - 1) / 2). None signifies the absence of a node. See
+        example below for an illustration.
     :type values: [int | None]
     :return: The root of the binary tree.
     :rtype: binarytree.Node
