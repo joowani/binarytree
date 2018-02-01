@@ -376,10 +376,10 @@ class Node(object):
 
         .. note::
 
-            To include `level-order (breath-first)`_ indexes in the string, use
+            To include `level-order (breadth-first)`_ indexes in the string, use
             :func:`binarytree.Node.pprint` instead.
 
-        .. _level-order (breath-first):
+        .. _level-order (breadth-first):
             https://en.wikipedia.org/wiki/Tree_traversal#Breadth-first_search
         """
         lines = _build_tree_string(self, 0, False, '-')[0]
@@ -509,7 +509,7 @@ class Node(object):
         return self.properties['size']
 
     def __getitem__(self, index):
-        """Return the node/subtree at the give `level-order (breath-first)`_
+        """Return the node/subtree at the give `level-order (breadth-first)`_
         index.
 
         :param index: The node index.
@@ -521,7 +521,7 @@ class Node(object):
         :raise binarytree.exceptions.NodeNotFoundError:
             If the target node does not exist.
 
-        .. _level-order (breath-first):
+        .. _level-order (breadth-first):
             https://en.wikipedia.org/wiki/Tree_traversal#Breadth-first_search
 
         **Example**:
@@ -578,7 +578,7 @@ class Node(object):
 
     def __setitem__(self, index, node):
         """Insert the node/subtree into the binary tree at the given
-        `level-order (breath-first)`_ index.
+        `level-order (breadth-first)`_ index.
 
         * An exception is raised if the parent node does not exist.
         * Any existing node/subtree is overwritten.
@@ -595,7 +595,7 @@ class Node(object):
         :raise binarytree.exceptions.InvalidNodeTypeError:
             If the new node is not an instance of :class:`binarytree.Node`.
 
-        .. _level-order (breath-first):
+        .. _level-order (breadth-first):
             https://en.wikipedia.org/wiki/Tree_traversal#Breadth-first_search
 
         **Example**:
@@ -651,7 +651,7 @@ class Node(object):
         setattr(parent, 'left' if index % 2 else 'right', node)
 
     def __delitem__(self, index):
-        """Remove the node/subtree at the given `level-order (breath-first)`_
+        """Remove the node/subtree at the given `level-order (breadth-first)`_
         index from the binary tree.
 
         * An exception is raised if the target node does not exist.
@@ -665,7 +665,7 @@ class Node(object):
         :raise binarytree.exceptions.NodeNotFoundError:
             If the target node or its parent does not exist.
 
-        .. _level-order (breath-first):
+        .. _level-order (breadth-first):
             https://en.wikipedia.org/wiki/Tree_traversal#Breadth-first_search
 
         **Example**:
@@ -718,7 +718,7 @@ class Node(object):
         """Pretty-print the binary tree.
 
         :param index: If set to True (default: False), display the
-            `level-order (breath-first)`_ indexes using the following
+            `level-order (breadth-first)`_ indexes using the following
             format: "{index}{delimiter}{value}".
         :type index: bool
         :param delimiter: The delimiter character between the node index, and
@@ -1547,9 +1547,9 @@ class Node(object):
     @property
     def levelorder(self):
         """Return the nodes in the binary tree using
-        `level-order (breath-first)`_ traversal.
+        `level-order (breadth-first)`_ traversal.
 
-        .. _level-order (breath-first):
+        .. _level-order (breadth-first):
             https://en.wikipedia.org/wiki/Tree_traversal#Breadth-first_search
 
         :return: The list of nodes.
@@ -1596,10 +1596,10 @@ class Node(object):
 
 def build(values):
     """Build a binary tree from a `list representation`_ (i.e. a list of
-    node values and/or None's in breath-first order) and return its root.
+    node values and/or None's in breadth-first order) and return its root.
 
     :param values: The list representation (i.e. a list of node values and/or
-        None's in breath-first order). If a node has an index i, its left child
+        None's in breadth-first order). If a node has an index i, its left child
         is at index 2i + 1, right child at index 2i + 2, and parent at index
         floor((i - 1) / 2). None signifies the absence of a node. See example
         below for an illustration.

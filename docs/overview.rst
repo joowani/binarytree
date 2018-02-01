@@ -152,9 +152,9 @@ Inspect tree properties:
     >>> root.levels
     [[Node(1)], [Node(2), Node(3)], [Node(4), Node(5)]]
 
-Use `level-order (breath-first)`_ indexes to manipulate nodes:
+Use `level-order (breadth-first)`_ indexes to manipulate nodes:
 
-.. _level-order (breath-first):
+.. _level-order (breadth-first):
     https://en.wikipedia.org/wiki/Tree_traversal#Breadth-first_search
 
 .. code-block:: python
