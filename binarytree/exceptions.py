@@ -2,32 +2,32 @@ from __future__ import absolute_import, unicode_literals
 
 
 class BinaryTreeError(Exception):
-    """Base exception."""
+    """Base (catch-all) binarytree exception."""
 
 
-class InvalidNodeValueError(BinaryTreeError):
-    """Raised if a node has an invalid value."""
+class NodeIndexError(BinaryTreeError):
+    """Node index was invalid."""
 
 
-class InvalidNodeIndexError(BinaryTreeError):
-    """Raised if an invalid level-order index is given."""
-
-
-class InvalidNodeTypeError(BinaryTreeError):
-    """Raised if a node is not an instance of :class:`binarytree.Node`."""
-
-
-class OperationForbiddenError(BinaryTreeError):
-    """Raised if the user tries to overwrite or delete the root node."""
+class NodeModifyError(BinaryTreeError):
+    """User tried to overwrite or delete the root node."""
 
 
 class NodeNotFoundError(BinaryTreeError):
-    """Raised if a node is missing from the binary tree."""
+    """Node was missing from the binary tree."""
 
 
-class InvalidTreeHeightError(BinaryTreeError):
-    """Raised if an invalid tree height is given."""
+class NodeReferenceError(BinaryTreeError):
+    """Node reference was invalid (e.g. cyclic reference)."""
 
 
-class CyclicNodeReferenceError(BinaryTreeError):
-    """Raised if the binary tree has a cyclic reference to a node."""
+class NodeTypeError(BinaryTreeError):
+    """Node was not an instance of :class:`binarytree.Node`."""
+
+
+class NodeValueError(BinaryTreeError):
+    """Node value was not a number (e.g. int, float)."""
+
+
+class TreeHeightError(BinaryTreeError):
+    """Tree height was invalid."""

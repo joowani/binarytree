@@ -37,25 +37,22 @@ Are you studying binary trees for your next exam, assignment or technical interv
 
 **Binarytree** is a Python library which provides a simple API to generate,
 visualize, inspect and manipulate binary trees. It allows you to skip the
-tedious work of setting up test data, and dive straight into practising
-your algorithms! Heaps and BSTs (binary search trees) are also supported.
+tedious work of setting up test data, and dive straight into practising your
+algorithms. Heaps and BSTs (binary search trees) are also supported.
 
 Announcements
 =============
 
-* **Binarytree** has been completely overhauled in version `3.0`_!
+* **Binarytree** version `4.0`_ is now out!
 * Please see the releases_ page for details on the latest updates.
 
-.. _3.0: https://github.com/joowani/binarytree/releases/tag/3.0.0
+.. _4.0: https://github.com/joowani/binarytree/releases/tag/4.0.0
 .. _releases: https://github.com/joowani/binarytree/releases
 
 Requirements
 ============
 
 - Python 2.7, 3.4, 3.5 or 3.6
-- Pip_ installer
-
-.. _Pip: https://pip.pypa.io
 
 Installation
 ============
@@ -66,18 +63,16 @@ To install a stable version from PyPi_:
 
     ~$ pip install binarytree
 
-
 To install the latest version directly from GitHub_:
 
 .. code-block:: bash
 
     ~$ pip install -e git+git@github.com:joowani/binarytree.git@master#egg=binarytree
 
-You may need to use ``sudo`` depending on your environment setup.
+You may need to use ``sudo`` depending on your environment.
 
 .. _PyPi: https://pypi.python.org/pypi/binarytree
 .. _GitHub: https://github.com/joowani/binarytree
-
 
 Getting Started
 ===============
@@ -92,7 +87,6 @@ By default, **binarytree** uses the following class to represent a node:
             self.value = value  # The node value
             self.left = left    # Left child
             self.right = right  # Right child
-
 
 Generate and pretty-print various types of binary trees:
 
@@ -163,7 +157,6 @@ Use the `binarytree.Node`_ class to build your own trees:
     #     \
     #      4
     #
-
 
 Inspect tree properties:
 
@@ -296,7 +289,6 @@ Use `level-order (breadth-first)`_ indexes to manipulate nodes:
     #        \
     #        2-3
 
-
 Traverse the trees using different algorithms:
 
 .. code-block:: python
@@ -329,19 +321,20 @@ Traverse the trees using different algorithms:
     >>> root.levelorder
     [Node(1), Node(2), Node(3), Node(4), Node(5)]
 
+    >>> list(root)  # Equivalent to root.levelorder
+    [Node(1), Node(2), Node(3), Node(4), Node(5)]
 
 `List representations`_ are also supported:
 
-.. _List representations:
-    https://en.wikipedia.org/wiki/Binary_tree#Arrays
-
+.. _List representations: https://en.wikipedia.org/wiki/Binary_tree#Arrays
 
 .. code-block:: python
 
     >>> from binarytree import build
     >>>
     >>> # Build a tree from list representation
-    >>> root = build([7, 3, 2, 6, 9, None, 1, 5, 8])
+    >>> values = [7, 3, 2, 6, 9, None, 1, 5, 8]
+    >>> root = build(values)
     >>> print(root)
     #
     #            __7
@@ -353,15 +346,12 @@ Traverse the trees using different algorithms:
     #    5   8
     #
     >>> # Convert the tree back to list representation
-    >>> list(root)
+    >>> root.values
     [7, 3, 2, 6, 9, None, 1, 5, 8]
-
-
 
 Check out the documentation_ for more details!
 
 .. _documentation: http://binarytree.readthedocs.io/en/latest/index.html
-
 
 Contributing
 ============

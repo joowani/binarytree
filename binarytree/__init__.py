@@ -4,24 +4,25 @@ __all__ = ['Node', 'tree', 'bst', 'heap', 'build']
 
 import heapq
 import random
+import numbers
 
 from binarytree.exceptions import (
-    InvalidNodeValueError,
-    InvalidNodeIndexError,
-    InvalidNodeTypeError,
-    OperationForbiddenError,
+    TreeHeightError,
+    NodeValueError,
+    NodeIndexError,
+    NodeTypeError,
+    NodeModifyError,
     NodeNotFoundError,
-    InvalidTreeHeightError,
-    CyclicNodeReferenceError,
+    NodeReferenceError,
 )
 
 
 def _is_balanced(root):
     """Return the height if the binary tree is balanced, -1 otherwise.
 
-    :param root: The root node of the binary tree.
+    :param root: Root node of the binary tree.
     :type root: binarytree.Node | None
-    :return: The height or -1.
+    :return: Height if the binary tree is balanced, -1 otherwise.
     :rtype: int
     """
     if root is None:
@@ -38,11 +39,11 @@ def _is_balanced(root):
 def _is_bst(root, min_value=float('-inf'), max_value=float('inf')):
     """Check if the binary tree is a BST (binary search tree).
 
-    :param root: The root node of the binary tree.
+    :param root: Root node of the binary tree.
     :type root: binarytree.Node | None
-    :param min_value: The minimum node value seen.
+    :param min_value: Minimum node value seen.
     :type min_value: int | float
-    :param max_value: The maximum node value seen.
+    :param max_value: Maximum node value seen.
     :type max_value: int | float
     :return: True if the binary tree is a BST, False otherwise.
     :rtype: bool
@@ -59,23 +60,20 @@ def _is_bst(root, min_value=float('-inf'), max_value=float('inf')):
 def _validate_tree_height(height):
     """Check if the height of the binary tree is valid.
 
-    :param height: The height of the binary tree (must be 0 - 9 inclusive).
+    :param height: Height of the binary tree (must be 0 - 9 inclusive).
     :type height: int
-    :raise binarytree.exceptions.InvalidTreeHeightError:
-        If an invalid tree height is given.
+    :raise binarytree.exceptions.TreeHeightError: If height is invalid.
     """
     if not (isinstance(height, int) and 0 <= height <= 9):
-        raise InvalidTreeHeightError(
-            'The height must be an integer between 0 - 9'
-        )
+        raise TreeHeightError('height must be an int between 0 - 9')
 
 
 def _generate_perfect_bst(height):
-    """Generate a perfect BST (binary search tree) and return its root node.
+    """Generate a perfect BST (binary search tree) and return its root.
 
-    :param height: The height of the binary tree to build.
+    :param height: Height of the BST.
     :type height: int
-    :return: The root node of the BST.
+    :return: Root node of the BST.
     :rtype: binarytree.Node
     """
     max_node_count = 2 ** (height + 1) - 1
@@ -87,8 +85,8 @@ def _build_bst_from_sorted_values(sorted_values):
     """Recursively build a perfect BST from odd number of sorted values.
 
     :param sorted_values: Odd number of sorted values.
-    :type sorted_values: [int]
-    :return: The root node of the BST.
+    :type sorted_values: [int | float]
+    :return: Root node of the BST.
     :rtype: binarytree.Node
     """
     if len(sorted_values) == 0:
@@ -103,9 +101,9 @@ def _build_bst_from_sorted_values(sorted_values):
 def _generate_random_leaf_count(height):
     """Return a random leaf count for building binary trees.
 
-    :param height: The height of the binary tree to build.
+    :param height: Height of the binary tree.
     :type height: int
-    :return: Randomly generated leaf count.
+    :return: Random leaf count.
     :rtype: int
     """
     max_leaf_count = 2 ** height
@@ -120,7 +118,7 @@ def _generate_random_leaf_count(height):
 def _generate_random_node_values(height):
     """Return random node values for building binary trees.
 
-    :param height: The height of the binary tree to build.
+    :param height: Height of the binary tree.
     :type height: int
     :return: Randomly generated node values.
     :rtype: [int]
@@ -132,33 +130,32 @@ def _generate_random_node_values(height):
 
 
 def _build_tree_string(root, curr_index, index=False, delimiter='-'):
-    """Recursively traverse down the binary tree build a pretty-print string.
+    """Recursively walk down the binary tree and build a pretty-print string.
 
     In each recursive call, a "box" of characters visually representing the
     current (sub)tree is constructed line by line. Each line is padded with
     whitespaces to ensure all lines in the box have the same length. Then the
-    box, its width, and start-end positions of its root value repr (required
-    for drawing branches) are sent up to the parent call. The parent call then
-    combines its left and right sub-boxes to construct a larger box etc.
+    box, its width, and start-end positions of its root node value repr string
+    (required for drawing branches) are sent up to the parent call. The parent
+    call then combines its left and right sub-boxes to build a larger box etc.
 
-    :param root: The root node of the binary tree.
+    :param root: Root node of the binary tree.
     :type root: binarytree.Node | None
-    :param curr_index: The level-order_ index of the current node (root is 0).
+    :param curr_index: Level-order_ index of the current node (root node is 0).
     :type curr_index: int
-    :param index: If set to True, include the level-order_ node indexes
-        using the following format: ``{index}{delimiter}{value}``
-        (default: False).
+    :param index: If set to True, include the level-order_ node indexes using
+        the following format: ``{index}{delimiter}{value}`` (default: False).
     :type index: bool
-    :param delimiter: The delimiter character between the node index and value
-        (default: '-').
+    :param delimiter: Delimiter character between the node index and the node
+        value (default: '-').
     :type delimiter:
-    :return: The box of characters visually representing the current subtree,
-        the width of the box, and the start-end positions of the new root value
-        repr string.
+    :return: Box of characters visually representing the current subtree, width
+        of the box, and start-end positions of the repr string of the new root
+        node value.
     :rtype: ([str], int, int, int)
 
-    .. _level-order:
-        https://en.wikipedia.org/wiki/Tree_traversal
+    .. _Level-order:
+        https://en.wikipedia.org/wiki/Tree_traversal#Breadth-first_search
     """
     if root is None:
         return [], 0, 0, 0
@@ -178,8 +175,8 @@ def _build_tree_string(root, curr_index, index=False, delimiter='-'):
     r_box, r_box_width, r_root_start, r_root_end = \
         _build_tree_string(root.right, 2 * curr_index + 2, index, delimiter)
 
-    # Draw the branch connecting the current root to the left sub-box
-    # Pad with whitespaces where necessary
+    # Draw the branch connecting the current root node to the left sub-box
+    # Pad the line with whitespaces where necessary
     if l_box_width > 0:
         l_root = (l_root_start + l_root_end) // 2 + 1
         line1.append(' ' * (l_root + 1))
@@ -191,12 +188,12 @@ def _build_tree_string(root, curr_index, index=False, delimiter='-'):
     else:
         new_root_start = 0
 
-    # Draw the representation of the current root
+    # Draw the representation of the current root node
     line1.append(node_repr)
     line2.append(' ' * new_root_width)
 
-    # Draw the branch connecting the current root to the right sub-box
-    # Pad with whitespaces where necessary
+    # Draw the branch connecting the current root node to the right sub-box
+    # Pad the line with whitespaces where necessary
     if r_box_width > 0:
         r_root = (r_root_start + r_root_end) // 2
         line1.append('_' * r_root)
@@ -214,16 +211,16 @@ def _build_tree_string(root, curr_index, index=False, delimiter='-'):
         r_line = r_box[i] if i < len(r_box) else ' ' * r_box_width
         new_box.append(l_line + gap + r_line)
 
-    # Return the new box, its width and its root positions
+    # Return the new box, its width and its root repr positions
     return new_box, len(new_box[0]), new_root_start, new_root_end
 
 
 def _get_tree_properties(root):
     """Inspect the binary tree and return its properties (e.g. height).
 
-    :param root: The root node of the binary tree.
+    :param root: Root node of the binary tree.
     :rtype: binarytree.Node
-    :return: The properties of the binary tree.
+    :return: Binary tree properties.
     :rtype: dict
     """
     is_descending = True
@@ -249,7 +246,7 @@ def _get_tree_properties(root):
             min_node_value = min(value, min_node_value)
             max_node_value = max(value, max_node_value)
 
-            # The node is a leaf.
+            # Node is a leaf.
             if node.left is None and node.right is None:
                 if min_leaf_depth == 0:
                     min_leaf_depth = max_leaf_depth
@@ -299,42 +296,39 @@ def _get_tree_properties(root):
 class Node(object):
     """Represents a binary tree node.
 
-    This class provides methods and properties for managing the calling node,
-    and the binary tree which the calling node is the root of. Whenever a
-    docstring in this class says "binary tree", it is referring to the calling
-    node instance and its descendants.
+    This class provides methods and properties for managing the current node
+    instance, and the binary tree in which the node is the root of. When a
+    docstring in this class mentions "binary tree", it is referring to the
+    current node and its descendants.
 
-    :param value: The node value. Only integers are supported.
-    :type value: int
-    :param left: The left child node (default: None).
+    :param value: Node value (must be a number).
+    :type value: int | float
+    :param left: Left child node (default: None).
     :type left: binarytree.Node | None
-    :param right: The right child node (default: None).
+    :param right: Right child node (default: None).
     :type right: binarytree.Node | None
-    :raise binarytree.exceptions.InvalidNodeValueError:
-        If the node value is not an integer.
-    :raise binarytree.exceptions.InvalidNodeTypeError:
-        If the left or right child is not an instance of
-        :class:`binarytree.Node`.
+    :raise binarytree.exceptions.NodeTypeError: If left or right child node is
+        not an instance of :class:`binarytree.Node`.
+    :raise binarytree.exceptions.NodeValueError: If node value is not a number
+        (e.g. int, float).
     """
 
     def __init__(self, value, left=None, right=None):
-        if not isinstance(value, int):
-            raise InvalidNodeValueError('The node value must be an integer')
+        if not isinstance(value, numbers.Number):
+            raise NodeValueError('node value must be a number')
         if left is not None and not isinstance(left, Node):
-            raise InvalidNodeTypeError(
-                'The left child node is not a binarytree.Node instance')
+            raise NodeTypeError('left child must be a Node instance')
         if right is not None and not isinstance(right, Node):
-            raise InvalidNodeTypeError(
-                'The right child node is not a binarytree.Node instance')
+            raise NodeTypeError('right child must be a Node instance')
 
         self.value = value
         self.left = left
         self.right = right
 
     def __repr__(self):
-        """Return the string representation of the node.
+        """Return the string representation of the current node.
 
-        :return: The string representation.
+        :return: String representation.
         :rtype: str | unicode
 
         **Example**:
@@ -351,7 +345,7 @@ class Node(object):
     def __str__(self):
         """Return the pretty-print string for the binary tree.
 
-        :return: The pretty-print string.
+        :return: Pretty-print string.
         :rtype: str | unicode
 
         **Example**:
@@ -375,29 +369,28 @@ class Node(object):
             <BLANKLINE>
 
         .. note::
+            To include level-order_ indexes in the output string, use
+            :func:`binarytree.Node.pprint` instead.
 
-            To include `level-order (breadth-first)`_ indexes in the string,
-            use :func:`binarytree.Node.pprint` instead.
-
-        .. _level-order (breadth-first):
+        .. _level-order:
             https://en.wikipedia.org/wiki/Tree_traversal#Breadth-first_search
         """
         lines = _build_tree_string(self, 0, False, '-')[0]
         return '\n' + '\n'.join((line.rstrip() for line in lines))
 
-    def __setattr__(self, attribute, obj):
-        """Modified version of **__setattr__** with extra sanity checks
-        around class attributes **left**, **right** and **value**.
+    def __setattr__(self, attr, obj):
+        """Modified version of ``__setattr__`` with extra sanity checking.
 
-        :param attribute: The name of the class attribute.
-        :type attribute: str | unicode
-        :param obj: The object to set.
+        Class attributes **left**, **right** and **value** are validated.
+
+        :param attr: Name of the class attribute.
+        :type attr: str | unicode
+        :param obj: Object to set.
         :type obj: object
-        :raise binarytree.exceptions.InvalidNodeTypeError:
-            If the left or right child is not an instance of
-            :class:`binarytree.Node`.
-        :raise binarytree.exceptions.InvalidNodeValueError:
-            If the node value is not an integer.
+        :raise binarytree.exceptions.NodeTypeError: If left or right child is
+            not an instance of :class:`binarytree.Node`.
+        :raise binarytree.exceptions.NodeValueError: If node value is not a
+            number (e.g. int, float).
 
         **Example**:
 
@@ -409,7 +402,7 @@ class Node(object):
             >>> node.left = 'invalid'  # doctest: +IGNORE_EXCEPTION_DETAIL
             Traceback (most recent call last):
              ...
-            InvalidNodeTypeError: The node is not a binarytree.Node instance
+            NodeTypeError: Left child must be a Node instance
 
         .. doctest::
 
@@ -419,28 +412,29 @@ class Node(object):
             >>> node.value = 'invalid'  # doctest: +IGNORE_EXCEPTION_DETAIL
             Traceback (most recent call last):
              ...
-            InvalidNodeValueError: The node value must be an integer
+            NodeValueError: node value must be a number
         """
-        if attribute == 'left' or attribute == 'right':
+        if attr == 'left':
             if obj is not None and not isinstance(obj, Node):
-                raise InvalidNodeTypeError(
-                    'The node is not a binarytree.Node instance')
-        elif attribute == 'value' and not isinstance(obj, int):
-            raise InvalidNodeValueError('The node value must be an integer')
-        object.__setattr__(self, attribute, obj)
+                raise NodeTypeError(
+                    'left child must be a Node instance')
+        elif attr == 'right':
+            if obj is not None and not isinstance(obj, Node):
+                raise NodeTypeError(
+                    'right child must be a Node instance')
+        elif attr == 'value' and not isinstance(obj, numbers.Number):
+            raise NodeValueError('node value must be a number')
+
+        object.__setattr__(self, attr, obj)
 
     def __iter__(self):
-        """Return the `list representation`_ of the binary tree.
+        """Iterate through the nodes in the binary tree in level-order_.
 
-        .. _list representation:
-            https://en.wikipedia.org/wiki/Binary_tree#Arrays
+        .. _level-order:
+            https://en.wikipedia.org/wiki/Tree_traversal#Breadth-first_search
 
-        :return: The list representation consisting of node values or None's.
-            If a node has an index i, its left child is at index 2i + 1, right
-            child at index 2i + 2, and parent at index floor((i - 1) / 2). None
-            signifies the absence of a node. See example below for an
-            illustration.
-        :rtype: [int | None]
+        :return: Node iterator.
+        :rtype: (binarytree.Node)
 
         **Example**:
 
@@ -451,42 +445,36 @@ class Node(object):
             >>> root = Node(1)
             >>> root.left = Node(2)
             >>> root.right = Node(3)
-            >>> root.left.right = Node(4)
+            >>> root.left.left = Node(4)
+            >>> root.left.right = Node(5)
             >>>
-            >>> list(root)
-            [1, 2, 3, None, 4]
+            >>> print(root)
+            <BLANKLINE>
+                __1
+               /   \\
+              2     3
+             / \\
+            4   5
+            <BLANKLINE>
+            >>> [node for node in root]
+            [Node(1), Node(2), Node(3), Node(4), Node(5)]
         """
         current_nodes = [self]
-        has_more_nodes = True
-        values = []
 
-        while has_more_nodes:
-            has_more_nodes = False
+        while len(current_nodes) > 0:
             next_nodes = []
             for node in current_nodes:
-                if node is None:
-                    values.append(None)
-                    next_nodes.extend((None, None))
-                    continue
-
-                if node.left is not None or node.right is not None:
-                    has_more_nodes = True
-
-                values.append(node.value)
-                next_nodes.extend((node.left, node.right))
-
+                yield node
+                if node.left is not None:
+                    next_nodes.append(node.left)
+                if node.right is not None:
+                    next_nodes.append(node.right)
             current_nodes = next_nodes
-
-        # Get rid of the trailing None entries
-        while values and values[-1] is None:
-            values.pop()
-
-        return iter(values)
 
     def __len__(self):
         """Return the total number of nodes in the binary tree.
 
-        :return: The total number of nodes.
+        :return: Total number of nodes.
         :rtype: int
 
         **Example**:
@@ -503,26 +491,22 @@ class Node(object):
             3
 
         .. note::
-
             This method is equivalent to :attr:`binarytree.Node.size`.
         """
         return self.properties['size']
 
     def __getitem__(self, index):
-        """Return the node/subtree at the give `level-order (breadth-first)`_
-        index.
+        """Return the node (or subtree) at the given level-order_ index.
 
-        :param index: The node index.
-        :type index: int
-        :return: The node at the given index.
-        :rtype: binarytree.Node
-        :raise binarytree.exceptions.InvalidNodeIndexError:
-            If an invalid index is given.
-        :raise binarytree.exceptions.NodeNotFoundError:
-            If the target node does not exist.
-
-        .. _level-order (breadth-first):
+        .. _level-order:
             https://en.wikipedia.org/wiki/Tree_traversal#Breadth-first_search
+
+        :param index: Level-order index of the node.
+        :type index: int
+        :return: Node (or subtree) at the given index.
+        :rtype: binarytree.Node
+        :raise binarytree.exceptions.NodeIndexError: If node index is invalid.
+        :raise binarytree.exceptions.NodeNotFoundError: If the node is missing.
 
         **Example**:
 
@@ -543,11 +527,11 @@ class Node(object):
             >>> root[3]  # doctest: +IGNORE_EXCEPTION_DETAIL
             Traceback (most recent call last):
              ...
-            NodeNotFoundError: Node missing at index 3
+            NodeNotFoundError: node missing at index 3
         """
         if not isinstance(index, int) or index < 0:
-            raise InvalidNodeIndexError(
-                'The node index must be a non-negative integer')
+            raise NodeIndexError(
+                'node index must be a non-negative int')
 
         current_nodes = [self]
         current_index = 0
@@ -574,29 +558,27 @@ class Node(object):
 
             current_nodes = next_nodes
 
-        raise NodeNotFoundError('Node missing at index {}'.format(index))
+        raise NodeNotFoundError('node missing at index {}'.format(index))
 
     def __setitem__(self, index, node):
-        """Insert the node/subtree into the binary tree at the given
-        `level-order (breadth-first)`_ index.
+        """Insert a node (or subtree) at the given level-order_ index.
 
-        * An exception is raised if the parent node does not exist.
-        * Any existing node/subtree is overwritten.
-        * The root node (calling node) cannot be replaced.
+        * An exception is raised if the parent node is missing.
+        * Any existing node or subtree is overwritten.
+        * Root node (current node) cannot be replaced.
 
-        :param index: The node index.
-        :type index: int
-        :param node: The new node to insert.
-        :type node: binarytree.Node
-        :raise binarytree.exceptions.OperationForbiddenError:
-            If the user tries to overwrite the root node (calling node).
-        :raise binarytree.exceptions.NodeNotFoundError:
-            If the parent for the new node does not exist.
-        :raise binarytree.exceptions.InvalidNodeTypeError:
-            If the new node is not an instance of :class:`binarytree.Node`.
-
-        .. _level-order (breadth-first):
+        .. _level-order:
             https://en.wikipedia.org/wiki/Tree_traversal#Breadth-first_search
+
+        :param index: Level-order index of the node.
+        :type index: int
+        :param node: Node to insert.
+        :type node: binarytree.Node
+        :raise binarytree.exceptions.NodeTypeError: If new node is not an
+            instance of :class:`binarytree.Node`.
+        :raise binarytree.exceptions.NodeNotFoundError: If parent is missing.
+        :raise binarytree.exceptions.NodeModifyError: If user attempts to
+            overwrite the root node (current node).
 
         **Example**:
 
@@ -611,7 +593,7 @@ class Node(object):
             >>> root[0] = Node(4)  # doctest: +IGNORE_EXCEPTION_DETAIL
             Traceback (most recent call last):
              ...
-            OperationForbiddenError: Cannot modify the root node
+            NodeModifyError: cannot modify the root node
 
         .. doctest::
 
@@ -624,7 +606,7 @@ class Node(object):
             >>> root[11] = Node(4)  # doctest: +IGNORE_EXCEPTION_DETAIL
             Traceback (most recent call last):
              ...
-            NodeNotFoundError: Parent node missing at index 5
+            NodeNotFoundError: parent node missing at index 5
 
         .. doctest::
 
@@ -640,33 +622,33 @@ class Node(object):
             Node(4)
         """
         if index == 0:
-            raise OperationForbiddenError('Cannot modify the root node')
+            raise NodeModifyError('cannot modify the root node')
 
         parent_index = (index - 1) // 2
         try:
             parent = self.__getitem__(parent_index)
         except NodeNotFoundError:
             raise NodeNotFoundError(
-                'Parent node missing at index {}'.format(parent_index))
+                'parent node missing at index {}'.format(parent_index))
+
         setattr(parent, 'left' if index % 2 else 'right', node)
 
     def __delitem__(self, index):
-        """Remove the node/subtree at the given `level-order (breadth-first)`_
-        index from the binary tree.
+        """Remove the node (or subtree) at the given level-order_ index.
 
-        * An exception is raised if the target node does not exist.
+        * An exception is raised if the target node is missing.
         * The descendants of the target node (if any) are also removed.
-        * The root node (calling node) cannot be deleted.
+        * Root node (current node) cannot be deleted.
 
-        :param index: The node index.
-        :type index: int
-        :raise binarytree.exceptions.OperationForbiddenError:
-            If the user tries to delete the root node (calling node).
-        :raise binarytree.exceptions.NodeNotFoundError:
-            If the target node or its parent does not exist.
-
-        .. _level-order (breadth-first):
+        .. _level-order:
             https://en.wikipedia.org/wiki/Tree_traversal#Breadth-first_search
+
+        :param index: Level-order index of the node.
+        :type index: int
+        :raise binarytree.exceptions.NodeNotFoundError: If the target node or
+            its parent is missing.
+        :raise binarytree.exceptions.NodeModifyError: If user attempts to
+            delete the root node (current node).
 
         **Example**:
 
@@ -681,7 +663,7 @@ class Node(object):
             >>> del root[0]  # doctest: +IGNORE_EXCEPTION_DETAIL
             Traceback (most recent call last):
              ...
-            OperationForbiddenError: Cannot delete the root node
+            NodeModifyError: cannot delete the root node
 
         .. doctest::
 
@@ -696,33 +678,33 @@ class Node(object):
             >>> root[2]  # doctest: +IGNORE_EXCEPTION_DETAIL
             Traceback (most recent call last):
              ...
-            NodeNotFoundError: Node missing at index 2
+            NodeNotFoundError: node missing at index 2
         """
         if index == 0:
-            raise OperationForbiddenError('Cannot delete the root node')
+            raise NodeModifyError('cannot delete the root node')
 
         parent_index = (index - 1) // 2
         try:
             parent = self.__getitem__(parent_index)
         except NodeNotFoundError:
             raise NodeNotFoundError(
-                'No node to delete at index {}'.format(index))
+                'no node to delete at index {}'.format(index))
 
         child_attr = 'left' if index % 2 == 1 else 'right'
         if getattr(parent, child_attr) is None:
             raise NodeNotFoundError(
-                'No node to delete at index {}'.format(index))
+                'no node to delete at index {}'.format(index))
+
         setattr(parent, child_attr, None)
 
     def pprint(self, index=False, delimiter='-'):
         """Pretty-print the binary tree.
 
-        :param index: If set to True (default: False), display the
-            `level-order (breadth-first)`_ indexes using the following
-            format: "{index}{delimiter}{value}".
+        :param index: If set to True (default: False), display level-order_
+            indexes using the format: ``{index}{delimiter}{value}``.
         :type index: bool
-        :param delimiter: The delimiter character between the node index, and
-            the node value (default: "-").
+        :param delimiter: Delimiter character between the node index and
+            the node value (default: '-').
         :type delimiter: str | unicode
 
         **Example**:
@@ -744,7 +726,7 @@ class Node(object):
              \\
               4
             <BLANKLINE>
-            >>> root.pprint(index=True)      # Format: {index}-{value}
+            >>> root.pprint(index=True)     # Format: {index}-{value}
             <BLANKLINE>
                _____0-1_
               /         \\
@@ -754,8 +736,11 @@ class Node(object):
             <BLANKLINE>
 
         .. note::
-            If you don't need to see the node indexes, you can use
-            :func:`binarytree.Node.__str__`.
+            If you do not need level-order_ indexes in the output string, use
+            :func:`binarytree.Node.__str__` instead.
+
+        .. _level-order:
+            https://en.wikipedia.org/wiki/Tree_traversal#Breadth-first_search
         """
         lines = _build_tree_string(self, 0, index, delimiter)[0]
         print('\n' + '\n'.join((line.rstrip() for line in lines)))
@@ -763,12 +748,12 @@ class Node(object):
     def validate(self):
         """Check if the binary tree is malformed.
 
-        :raise binarytree.exceptions.CyclicNodeReferenceError:
-            If there is a cyclic reference to a node in the binary tree.
-        :raise binarytree.exceptions.InvalidNodeTypeError:
-            If a node is not an instance of :class:`binarytree.Node`.
-        :raise binarytree.exceptions.InvalidNodeValueError:
-            If a node value is not an integer.
+        :raise binarytree.exceptions.NodeReferenceError: If there is a
+            cyclic reference to a node in the binary tree.
+        :raise binarytree.exceptions.NodeTypeError: If a node is not an
+            instance of :class:`binarytree.Node`.
+        :raise binarytree.exceptions.NodeValueError: If a node value is not a
+            number (e.g. int, float).
 
         **Example**:
 
@@ -783,49 +768,101 @@ class Node(object):
             >>> root.validate()  # doctest: +IGNORE_EXCEPTION_DETAIL
             Traceback (most recent call last):
              ...
-            CyclicNodeReferenceError: Cyclic node reference at index 0
+            NodeReferenceError: cyclic node reference at index 0
         """
         has_more_nodes = True
-        nodes_visited = set()
-        current_nodes = [self]
-        current_index = 0
+        visited = set()
+        to_visit = [self]
+        index = 0
 
         while has_more_nodes:
             has_more_nodes = False
             next_nodes = []
 
-            for node in current_nodes:
+            for node in to_visit:
                 if node is None:
                     next_nodes.extend((None, None))
                 else:
-                    if node in nodes_visited:
-                        raise CyclicNodeReferenceError(
-                            'Cyclic node reference at index {}'
-                            .format(current_index)
-                        )
+                    if node in visited:
+                        raise NodeReferenceError(
+                            'cyclic node reference at index {}'.format(index))
                     if not isinstance(node, Node):
-                        raise InvalidNodeTypeError(
-                            'Invalid node instance at index {}'
-                            .format(current_index)
-                        )
-                    if not isinstance(node.value, int):
-                        raise InvalidNodeValueError(
-                            'Invalid node value at index {}'
-                            .format(current_index)
-                        )
+                        raise NodeTypeError(
+                            'invalid node instance at index {}'.format(index))
+                    if not isinstance(node.value, numbers.Number):
+                        raise NodeValueError(
+                            'invalid node value at index {}'.format(index))
                     if node.left is not None or node.right is not None:
                         has_more_nodes = True
-                    nodes_visited.add(node)
+                    visited.add(node)
                     next_nodes.extend((node.left, node.right))
-                current_index += 1
+                index += 1
+
+            to_visit = next_nodes
+
+    @property
+    def values(self):
+        """Return the `list representation`_ of the binary tree.
+
+        .. _list representation:
+            https://en.wikipedia.org/wiki/Binary_tree#Arrays
+
+        :return: List representation of the binary tree, which is a list of
+            node values in breadth-first order starting from the root (current
+            node). If a node is at index i, its left child is always at 2i + 1,
+            right child at 2i + 2, and parent at index floor((i - 1) / 2). None
+            indicates absence of a node at that index. See example below for an
+            illustration.
+        :rtype: [int | float | None]
+
+        **Example**:
+
+        .. doctest::
+
+            >>> from binarytree import Node
+            >>>
+            >>> root = Node(1)
+            >>> root.left = Node(2)
+            >>> root.right = Node(3)
+            >>> root.left.right = Node(4)
+            >>>
+            >>> root.values
+            [1, 2, 3, None, 4]
+        """
+        current_nodes = [self]
+        has_more_nodes = True
+        values = []
+
+        while has_more_nodes:
+            has_more_nodes = False
+            next_nodes = []
+            for node in current_nodes:
+                if node is None:
+                    values.append(None)
+                    next_nodes.extend((None, None))
+                    continue
+
+                if node.left is not None or node.right is not None:
+                    has_more_nodes = True
+
+                values.append(node.value)
+                next_nodes.extend((node.left, node.right))
 
             current_nodes = next_nodes
 
+        # Get rid of trailing None's
+        while values and values[-1] is None:
+            values.pop()
+
+        return values
+
     @property
     def leaves(self):
-        """Return the leaves of the binary tree.
+        """Return the leaf nodes of the binary tree.
 
-        :return: The list of leaf nodes.
+        A leaf node is any node that does not have child nodes.
+
+        :return: List of leaf nodes.
         :rtype: [binarytree.Node]
 
         **Example**:
@@ -870,7 +907,7 @@ class Node(object):
     def levels(self):
         """Return the nodes in the binary tree level by level.
 
-        :return: The per-level lists of nodes.
+        :return: Lists of nodes level by level.
         :rtype: [[binarytree.Node]]
 
         **Example**:
@@ -914,7 +951,11 @@ class Node(object):
     def height(self):
         """Return the height of the binary tree.
 
-        :return: The height of the binary tree.
+        Height of a binary tree is the number of edges on the longest path
+        between the root node and a leaf node. Binary tree with just a single
+        node has a height of 0.
+
+        :return: Height of the binary tree.
         :rtype: int
 
         **Example**:
@@ -939,7 +980,6 @@ class Node(object):
             2
 
         .. note::
-
             A binary tree with only a root node has a height of 0.
         """
         return _get_tree_properties(self)['height']
@@ -948,7 +988,7 @@ class Node(object):
     def size(self):
         """Return the total number of nodes in the binary tree.
 
-        :return: The total number of nodes.
+        :return: Total number of nodes.
         :rtype: int
 
         **Example**:
@@ -966,16 +1006,17 @@ class Node(object):
             4
 
         .. note::
-
             This method is equivalent to :func:`binarytree.Node.__len__`.
         """
         return _get_tree_properties(self)['size']
 
     @property
     def leaf_count(self):
-        """Return the total number of leaves in the binary tree.
+        """Return the total number of leaf nodes in the binary tree.
 
-        :return: The total number of leaves.
+        A leaf node is a node with no child nodes.
+
+        :return: Total number of leaf nodes.
         :rtype: int
 
         **Example**:
@@ -996,7 +1037,15 @@ class Node(object):
 
     @property
     def is_balanced(self):
-        """Return True if the binary tree is height-balanced, False otherwise.
+        """Check if the binary tree is height-balanced.
+
+        A binary tree is height-balanced if it meets the following criteria:
+
+        * Left subtree is height-balanced.
+        * Right subtree is height-balanced.
+        * The difference between heights of left and right subtrees is no more
+          than 1.
+        * An empty binary tree is always height-balanced.
 
         :return: True if the binary tree is balanced, False otherwise.
         :rtype: bool
@@ -1026,11 +1075,12 @@ class Node(object):
 
     @property
     def is_bst(self):
-        """Return True if the binary tree is a BST (binary search tree),
-        False otherwise.
+        """Check if the binary tree is a BST_ (binary search tree).
 
-        :return: True if the binary tree is a BST, False otherwise.
+        :return: True if the binary tree is a BST_, False otherwise.
         :rtype: bool
+
+        .. _BST: https://en.wikipedia.org/wiki/Binary_search_tree
 
         **Example**:
 
@@ -1055,10 +1105,12 @@ class Node(object):
 
     @property
     def is_max_heap(self):
-        """Return True if the binary tree is a max heap, False otherwise.
+        """Check if the binary tree is a `max heap`_.
 
-        :return: True if the binary tree is a max heap, False otherwise.
+        :return: True if the binary tree is a `max heap`_, False otherwise.
         :rtype: bool
+
+        .. _max heap: https://en.wikipedia.org/wiki/Min-max_heap
 
         **Example**:
 
@@ -1083,10 +1135,12 @@ class Node(object):
 
     @property
     def is_min_heap(self):
-        """Return True if the binary tree is a min heap, False otherwise.
+        """Check if the binary tree is a `min heap`_.
 
-        :return: True if the binary tree is a min heap, False otherwise.
+        :return: True if the binary tree is a `min heap`_, False otherwise.
         :rtype: bool
+
+        .. _min heap: https://en.wikipedia.org/wiki/Min-max_heap
 
         **Example**:
 
@@ -1111,8 +1165,10 @@ class Node(object):
 
     @property
     def is_perfect(self):
-        """Return True if the binary tree is perfect (i.e. all levels are
-        completely filled), False otherwise.
+        """Check if the binary tree is perfect.
+
+        A binary tree is perfect if all its levels are completely filled. See
+        example below for an illustration.
 
         :return: True if the binary tree is perfect, False otherwise.
         :rtype: bool
@@ -1146,8 +1202,10 @@ class Node(object):
 
     @property
     def is_strict(self):
-        """Return True if the binary tree is strict (i.e. all non-leaf nodes
-        have both children), False otherwise.
+        """Check if the binary tree is strict.
+
+        A binary tree is strict if all its non-leaf nodes have both the left
+        and right child nodes.
 
         :return: True if the binary tree is strict, False otherwise.
         :rtype: bool
@@ -1174,18 +1232,17 @@ class Node(object):
             <BLANKLINE>
             >>> root.is_strict
             True
-
-        .. note::
-
-            Strictly binary nodes are also called **full** nodes.
         """
         return _get_tree_properties(self)['is_strict']
 
     @property
     def is_complete(self):
-        """Return True if the binary tree is complete (i.e. all levels except
-        possibly the last are completely filled, and the last level is always
-        left-justified), False otherwise.
+        """Check if the binary tree is complete.
+
+        A binary tree is complete if it meets the following criteria:
+
+        * All levels except possibly the last are completely filled.
+        * Last level is left-justified.
 
         :return: True if the binary tree is complete, False otherwise.
         :rtype: bool
@@ -1217,9 +1274,9 @@ class Node(object):
 
     @property
     def min_node_value(self):
-        """Return the minimum node value in the binary tree.
+        """Return the minimum node value of the binary tree.
 
-        :return: The minimum node value.
+        :return: Minimum node value.
         :rtype: int
 
         **Example**:
@@ -1239,9 +1296,9 @@ class Node(object):
 
     @property
     def max_node_value(self):
-        """Return the maximum node value in the binary tree.
+        """Return the maximum node value of the binary tree.
 
-        :return: The maximum node value.
+        :return: Maximum node value.
         :rtype: int
 
         **Example**:
@@ -1261,9 +1318,9 @@ class Node(object):
 
     @property
     def max_leaf_depth(self):
-        """Return the maximum leaf node depth in the binary tree.
+        """Return the maximum leaf node depth of the binary tree.
 
-        :return: The maximum leaf node depth.
+        :return: Maximum leaf node depth.
         :rtype: int
 
         **Example**:
@@ -1295,9 +1352,9 @@ class Node(object):
 
     @property
     def min_leaf_depth(self):
-        """Return the minimum leaf node depth in the binary tree.
+        """Return the minimum leaf node depth of the binary tree.
 
-        :return: The minimum leaf node depth.
+        :return: Minimum leaf node depth.
         :rtype: int
 
         **Example**:
@@ -1329,9 +1386,9 @@ class Node(object):
 
     @property
     def properties(self):
-        """Return various properties of the the binary tree all at once.
+        """Return various properties of the binary tree.
 
-        :return: The properties of the binary tree.
+        :return: Binary tree properties.
         :rtype: dict
 
         **Example**:
@@ -1385,13 +1442,13 @@ class Node(object):
 
     @property
     def inorder(self):
-        """Return the nodes in the binary tree using in-order_ (left, root,
-        right) traversal.
+        """Return the nodes in the binary tree using in-order_ traversal.
 
-        .. _in-order:
-            https://en.wikipedia.org/wiki/Tree_traversal
+        An in-order_ traversal visits left subtree, root, then right subtree.
 
-        :return: The list of nodes.
+        .. _in-order: https://en.wikipedia.org/wiki/Tree_traversal
+
+        :return: List of nodes.
         :rtype: [binarytree.Node]
 
         **Example**:
@@ -1436,13 +1493,13 @@ class Node(object):
 
     @property
     def preorder(self):
-        """Return the nodes in the binary tree using pre-order_ (root, left,
-        right) traversal.
+        """Return the nodes in the binary tree using pre-order_ traversal.
 
-        .. _pre-order:
-            https://en.wikipedia.org/wiki/Tree_traversal
+        A pre-order_ traversal visits root, left subtree, then right subtree.
 
-        :return: The list of nodes.
+        .. _pre-order: https://en.wikipedia.org/wiki/Tree_traversal
+
+        :return: List of nodes.
         :rtype: [binarytree.Node]
 
         **Example**:
@@ -1468,31 +1525,30 @@ class Node(object):
             >>> root.preorder
             [Node(1), Node(2), Node(4), Node(5), Node(3)]
         """
-        node_values = []
         node_stack = [self]
+        result = []
 
         while len(node_stack) > 0:
             node = node_stack.pop()
-            node_values.append(node)
+            result.append(node)
 
             if node.right is not None:
                 node_stack.append(node.right)
             if node.left is not None:
                 node_stack.append(node.left)
 
-        return node_values
+        return result
 
     @property
     def postorder(self):
-        """Return the nodes in the binary tree using post-order_ (left, right,
-        root) traversal.
+        """Return the nodes in the binary tree using post-order_ traversal.
 
-        .. _post-order:
-            https://en.wikipedia.org/wiki/Tree_traversal
+        A post-order_ traversal visits left subtree, right subtree, then root.
 
-        :return: The list of nodes.
+        .. _post-order: https://en.wikipedia.org/wiki/Tree_traversal
+
+        :return: List of nodes.
         :rtype: [binarytree.Node]
-
 
         **Example**:
 
@@ -1517,8 +1573,8 @@ class Node(object):
             >>> root.postorder
             [Node(4), Node(5), Node(2), Node(3), Node(1)]
         """
-        node_values = []
         node_stack = []
+        result = []
         node = self
 
         while True:
@@ -1536,23 +1592,24 @@ class Node(object):
                 node_stack.append(node)
                 node = node.right
             else:
-                node_values.append(node)
+                result.append(node)
                 node = None
 
             if len(node_stack) == 0:
                 break
 
-        return node_values
+        return result
 
     @property
     def levelorder(self):
-        """Return the nodes in the binary tree using
-        `level-order (breadth-first)`_ traversal.
+        """Return the nodes in the binary tree using level-order_ traversal.
 
-        .. _level-order (breadth-first):
+        A level-order_ traversal visits nodes left to right, level by level.
+
+        .. _level-order:
             https://en.wikipedia.org/wiki/Tree_traversal#Breadth-first_search
 
-        :return: The list of nodes.
+        :return: List of nodes.
         :rtype: [binarytree.Node]
 
         **Example**:
@@ -1579,38 +1636,37 @@ class Node(object):
             [Node(1), Node(2), Node(3), Node(4), Node(5)]
         """
         current_nodes = [self]
-        node_values = []
+        result = []
 
         while len(current_nodes) > 0:
             next_nodes = []
             for node in current_nodes:
-                node_values.append(node)
+                result.append(node)
                 if node.left is not None:
                     next_nodes.append(node.left)
                 if node.right is not None:
                     next_nodes.append(node.right)
             current_nodes = next_nodes
 
-        return node_values
+        return result
 
 
 def build(values):
-    """Build a binary tree from a `list representation`_ (i.e. a list of
-    node values and/or None's in breadth-first order) and return its root.
-
-    :param values: The list representation (i.e. a list of node values and/or
-        None's in breadth-first order). If a node has an index i, its left
-        child is at index 2i + 1, right child at index 2i + 2, and parent at
-        index floor((i - 1) / 2). None signifies the absence of a node. See
-        example below for an illustration.
-    :type values: [int | None]
-    :return: The root of the binary tree.
-    :rtype: binarytree.Node
-    :raise binarytree.exceptions.NodeNotFoundError:
-        If the list representation is malformed and a parent node is missing.
+    """Build a tree from `list representation`_ and return its root node.
 
     .. _list representation:
         https://en.wikipedia.org/wiki/Binary_tree#Arrays
+
+    :param values: List representation of the binary tree, which is a list of
+        node values in breadth-first order starting from the root (current
+        node). If a node is at index i, its left child is always at 2i + 1,
+        right child at 2i + 2, and parent at floor((i - 1) / 2). None indicates
+        absence of a node at that index. See example below for an illustration.
+    :type values: [int | float | None]
+    :return: Root node of the binary tree.
+    :rtype: binarytree.Node
+    :raise binarytree.exceptions.NodeNotFoundError: If the list representation
+        is malformed (e.g. a parent node is missing).
 
     **Example**:
 
@@ -1636,7 +1692,7 @@ def build(values):
         >>> root = build([None, 2, 3])  # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
          ...
-        NodeNotFoundError: Parent node missing at index 0
+        NodeNotFoundError: parent node missing at index 0
     """
     nodes = [None if v is None else Node(v) for v in values]
 
@@ -1647,9 +1703,7 @@ def build(values):
             parent = nodes[parent_index]
             if parent is None:
                 raise NodeNotFoundError(
-                    'Parent node missing at index {}'
-                    .format(parent_index)
-                )
+                    'parent node missing at index {}'.format(parent_index))
             setattr(parent, 'left' if index % 2 else 'right', node)
 
     return nodes[0] if nodes else None
@@ -1658,16 +1712,15 @@ def build(values):
 def tree(height=3, is_perfect=False):
     """Generate a random binary tree and return its root node.
 
-    :param height: The height of the tree (default: 3, range: 0 - 9 inclusive).
+    :param height: Height of the tree (default: 3, range: 0 - 9 inclusive).
     :type height: int
     :param is_perfect: If set to True (default: False), a perfect binary tree
-        with all levels filled is returned. When set to False, a perfect binary
-        tree may still be generated and returned by chance.
+        with all levels filled is returned. If set to False, a perfect binary
+        tree may still be generated by chance.
     :type is_perfect: bool
-    :return: The root node of the generated tree.
+    :return: Root node of the binary tree.
     :rtype: binarytree.Node
-    :raise binarytree.exceptions.InvalidTreeHeightError:
-        If an invalid tree height is given.
+    :raise binarytree.exceptions.TreeHeightError: If height is invalid.
 
     **Example**:
 
@@ -1698,7 +1751,7 @@ def tree(height=3, is_perfect=False):
         >>> root = tree(height=20)  # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
          ...
-        InvalidTreeHeightError: The height must be an integer between 0 - 9
+        TreeHeightError: height must be an int between 0 - 9
     """
     _validate_tree_height(height)
     values = _generate_random_node_values(height)
@@ -1733,16 +1786,15 @@ def tree(height=3, is_perfect=False):
 def bst(height=3, is_perfect=False):
     """Generate a random BST (binary search tree) and return its root node.
 
-    :param height: The height of the BST (default: 3, range: 0 - 9 inclusive).
+    :param height: Height of the BST (default: 3, range: 0 - 9 inclusive).
     :type height: int
     :param is_perfect: If set to True (default: False), a perfect BST with all
-        levels filled is returned. When set to False, a perfect BST may still
-        be generated and returned by chance.
+        levels filled is returned. If set to False, a perfect BST may still be
+        generated by chance.
     :type is_perfect: bool
-    :return: The root node of the generated BST.
+    :return: Root node of the BST.
     :rtype: binarytree.Node
-    :raise binarytree.exceptions.InvalidTreeHeightError:
-        If an invalid tree height is given.
+    :raise binarytree.exceptions.TreeHeightError: If height is invalid.
 
     **Example**:
 
@@ -1764,7 +1816,7 @@ def bst(height=3, is_perfect=False):
         >>> root = bst(10)  # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
          ...
-        InvalidTreeHeightError: The height must be an integer between 0 - 9
+        TreeHeightError: height must be an int between 0 - 9
     """
     _validate_tree_height(height)
     if is_perfect:
@@ -1798,22 +1850,21 @@ def bst(height=3, is_perfect=False):
 
 
 def heap(height=3, is_max=True, is_perfect=False):
-    """Generate a heap and return its root node.
+    """Generate a random heap and return its root node.
 
-    :param height: The height of the heap (default: 3, range: 0 - 9 inclusive).
+    :param height: Height of the heap (default: 3, range: 0 - 9 inclusive).
     :type height: int
-    :param is_max: If set to True (default: True), generate a max heap.
-        Otherwise, generate a min heap. Note that a binary tree with only the
-        root is both a min and max heap.
+    :param is_max: If set to True (default: True), generate a max heap. If set
+        to False, generate a min heap. A binary tree with only the root node is
+        considered both a min and max heap.
     :type is_max: bool
     :param is_perfect: If set to True (default: False), a perfect heap with all
-        levels filled is returned. When set to False, a perfect heap may still
-        be generated and returned by chance.
+        levels filled is returned. If set to False, a perfect heap may still be
+        generated by chance.
     :type is_perfect: bool
-    :return: The root node of the generated heap.
+    :return: Root node of the heap.
     :rtype: binarytree.Node
-    :raise binarytree.exceptions.InvalidTreeHeightError:
-        If an invalid tree height is given.
+    :raise binarytree.exceptions.TreeHeightError: If height is invalid.
 
     **Example**:
 
@@ -1859,7 +1910,7 @@ def heap(height=3, is_max=True, is_perfect=False):
         >>> root = heap(-1)  # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
          ...
-        InvalidTreeHeightError: The height must be an integer between 0 - 9
+        TreeHeightError: height must be an int between 0 - 9
     """
     _validate_tree_height(height)
     values = _generate_random_node_values(height)

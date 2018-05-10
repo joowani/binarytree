@@ -6,15 +6,12 @@ python:
     - 3.5
     - 3.6
 install:
-    - pip install coverage
-    - pip install pytest
-    - pip install pytest-cov
-    - pip install python-coveralls
-    - pip install flake8
-    - python setup.py install
+    - pip install flake8 mock pytest pytest-cov python-coveralls sphinx sphinx_rtd_theme
+    - pip install .
 script:
-    - python -m flake8 binarytree/__init__.py
-    - python -m doctest binarytree/__init__.py
-    - py.test tests.py --cov=binarytree
+    - python -m flake8
+    - python -m sphinx -b doctest docs docs/_build
+    - python -m sphinx -b html -W docs docs/_build
+    - py.test -s -v --cov=binarytree
 after_success:
     - coveralls

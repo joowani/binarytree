@@ -3,7 +3,7 @@ Overview
 
 By default, **binarytree** uses the following class to represent a node:
 
-.. code-block:: python
+.. testcode::
 
     class Node(object):
 
@@ -11,7 +11,6 @@ By default, **binarytree** uses the following class to represent a node:
             self.value = value  # The node value
             self.left = left    # Left child
             self.right = right  # Right child
-
 
 Generate and pretty-print various types of binary trees:
 
@@ -60,10 +59,9 @@ Generate and pretty-print various types of binary trees:
     0    10    6
 
 
-Use the :ref:`binarytree.Node <Class: binarytree.Node>` class to build your
-own trees:
+Use the :class:`binarytree.Node` class to build your own trees:
 
-.. code-block:: python
+.. doctest::
 
     >>> from binarytree import Node
     >>>
@@ -73,17 +71,17 @@ own trees:
     >>> root.left.right = Node(4)
     >>>
     >>> print(root)
-
+    <BLANKLINE>
       __1
      /   \
     2     3
      \
       4
-
+    <BLANKLINE>
 
 Inspect tree properties:
 
-.. code-block:: python
+.. doctest::
 
     >>> from binarytree import Node
     >>>
@@ -94,13 +92,13 @@ Inspect tree properties:
     >>> root.left.right = Node(5)
     >>>
     >>> print(root)
-
+    <BLANKLINE>
         __1
        /   \
       2     3
      / \
     4   5
-
+    <BLANKLINE>
     >>> root.height
     2
     >>> root.is_balanced
@@ -130,21 +128,13 @@ Inspect tree properties:
     >>> root.size
     5
 
-    >>> root.properties
-    {'height': 2,
-     'is_balanced': True,
-     'is_bst': False,
-     'is_complete': True,
-     'is_max_heap': False,
-     'is_min_heap': True,
-     'is_perfect': False,
-     'is_strict': True,
-     'leaf_count': 3,
-     'max_leaf_depth': 2,
-     'max_node_value': 5,
-     'min_leaf_depth': 1,
-     'min_node_value': 1,
-     'size': 5}
+    >>> properties = root.properties  # Get all properties at once
+    >>> properties['height']
+    2
+    >>> properties['is_balanced']
+    True
+    >>> properties['max_leaf_depth']
+    2
 
     >>> root.leaves
     [Node(3), Node(4), Node(5)]
@@ -157,7 +147,7 @@ Use `level-order (breadth-first)`_ indexes to manipulate nodes:
 .. _level-order (breadth-first):
     https://en.wikipedia.org/wiki/Tree_traversal#Breadth-first_search
 
-.. code-block:: python
+.. doctest::
 
     >>> from binarytree import Node
     >>>
@@ -168,7 +158,7 @@ Use `level-order (breadth-first)`_ indexes to manipulate nodes:
     >>> root.left.right.left = Node(5)  # index: 9, value: 5
     >>>
     >>> print(root)
-
+    <BLANKLINE>
       ____1
      /     \
     2__     3
@@ -176,10 +166,10 @@ Use `level-order (breadth-first)`_ indexes to manipulate nodes:
         4
        /
       5
-
+    <BLANKLINE>
     >>> # Use binarytree.Node.pprint instead of print to display indexes
     >>> root.pprint(index=True)
-
+    <BLANKLINE>
        _________0-1_
       /             \
     1-2_____        2-3
@@ -187,7 +177,7 @@ Use `level-order (breadth-first)`_ indexes to manipulate nodes:
            _4-4
           /
         9-5
-
+    <BLANKLINE>
     >>> # Return the node/subtree at index 9
     >>> root[9]
     Node(5)
@@ -195,7 +185,7 @@ Use `level-order (breadth-first)`_ indexes to manipulate nodes:
     >>> # Replace the node/subtree at index 4
     >>> root[4] = Node(6, left=Node(7), right=Node(8))
     >>> root.pprint(index=True)
-
+    <BLANKLINE>
        ______________0-1_
       /                  \
     1-2_____             2-3
@@ -203,19 +193,19 @@ Use `level-order (breadth-first)`_ indexes to manipulate nodes:
            _4-6_
           /     \
         9-7     10-8
-
+    <BLANKLINE>
     >>> # Delete the node/subtree at index 1
     >>> del root[1]
     >>> root.pprint(index=True)
-
+    <BLANKLINE>
     0-1_
         \
         2-3
-
+    <BLANKLINE>
 
 Traverse the trees using different algorithms:
 
-.. code-block:: python
+.. doctest::
 
     >>> from binarytree import Node
     >>>
@@ -226,13 +216,13 @@ Traverse the trees using different algorithms:
     >>> root.left.right = Node(5)
     >>>
     >>> print(root)
-
+    <BLANKLINE>
         __1
        /   \
       2     3
      / \
     4   5
-
+    <BLANKLINE>
     >>> root.inorder
     [Node(4), Node(2), Node(5), Node(1), Node(3)]
 
@@ -245,21 +235,23 @@ Traverse the trees using different algorithms:
     >>> root.levelorder
     [Node(1), Node(2), Node(3), Node(4), Node(5)]
 
+    >>> list(root)  # Equivalent to root.levelorder
+    [Node(1), Node(2), Node(3), Node(4), Node(5)]
 
 `List representations`_ are also supported:
 
 .. _List representations:
     https://en.wikipedia.org/wiki/Binary_tree#Arrays
 
-
-.. code-block:: python
+.. doctest::
 
     >>> from binarytree import build
     >>>
     >>> # Build a tree from list representation
-    >>> root = build([7, 3, 2, 6, 9, None, 1, 5, 8])
+    >>> values = [7, 3, 2, 6, 9, None, 1, 5, 8]
+    >>> root = build(values)
     >>> print(root)
-
+    <BLANKLINE>
             __7
            /   \
         __3     2
@@ -267,10 +259,9 @@ Traverse the trees using different algorithms:
       6     9     1
      / \
     5   8
-
+    <BLANKLINE>
     >>> # Convert the tree back to list representation
-    >>> list(root)
+    >>> root.values
     [7, 3, 2, 6, 9, None, 1, 5, 8]
 
-
-See :ref:`API Specification` for more details.
+See :doc:`specs` for more details.

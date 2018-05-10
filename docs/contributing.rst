@@ -5,31 +5,30 @@ Instructions
 ============
 
 Before submitting a pull request on GitHub_, please make sure you meet the
-following requirements:
+following **requirements**:
 
 * The pull request points to the dev_ (development) branch.
-* All changes are squashed into a single commit (I like to use
-  ``git rebase -i`` to do this).
-* The commit message is in present tense (ok: "Add feature", not ok:
+* All changes are squashed into a single commit (I like to use ``git rebase -i``
+  to do this).
+* The commit message is in present tense (good: "Add feature", bad:
   "Added feature").
-* Correct and consistent style: Sphinx_-compatible docstrings, using snake
-  vs. camel casing properly_ and PEP8_ compliance (see below).
+* Correct and consistent style: Sphinx_-compatible docstrings, correct snake
+  and camel casing, and PEP8_ compliance (see below).
 * No classes/methods/functions with missing docstrings or commented-out lines.
-  You can refer to existing ones for examples.
-* The test coverage_ remains at %100. Sometimes you may find yourself having to
-  write superfluous unit tests to keep this number up. If a piece of code is
-  trivial and has no need for unittests, use this_ to exclude it from coverage.
+  You can take a look at the existing code in binarytree for examples.
+* The test coverage_ remains at %100. You may find yourself having to write
+  superfluous unit tests to keep this number up. If a piece of code is trivial
+  and has no need for tests, use this_ to exclude it from coverage.
 * No build failures on TravisCI_. The builds automatically trigger on PR
   submissions.
 * Does not break backward-compatibility (unless there is a really good reason).
-* Compatible with Python versions 2.7, 3.4, 3.5 and 3.6.
+* Compatibility with all supported Python versions: 2.7, 3.4, 3.5 and 3.6.
 
 .. warning::
     The dev branch is occasionally rebased_, and its commit history may be
-    overwritten in the process (I try very hard never to do this). So before
-    you begin your feature work, git fetch/pull to ensure that branches have
-    not diverged. If you see git conflicts and just want to start from scratch,
-    run this command:
+    overwritten in the process. Before you begin feature work, git fetch or
+    pull to ensure that your local branch has not diverged. If you see git
+    conflicts and just want to start from scratch, run these commands:
 
     .. code-block:: bash
 
@@ -49,15 +48,15 @@ To ensure PEP8_ compliance, run flake8_:
     ~$ cd binarytree
     ~$ flake8
 
-You should try to resolve all issues reported. If there is a good reason to
-ignore errors from a specific piece of code, visit here_ to see how to exclude
-the lines from the check.
+You must resolve all issues reported. If there is a good reason to ignore
+errors coming from a specific piece of code, visit here_ to see how to exclude
+the lines.
 
 Testing
 =======
 
 To test your changes, run the unit tests that come with **binarytree** on your
-local machine. The tests are written using pytest_.
+local machine. The tests use pytest_.
 
 To run the unit tests:
 
@@ -66,7 +65,7 @@ To run the unit tests:
     ~$ pip install pytest
     ~$ git clone https://github.com/joowani/binarytree.git
     ~$ cd binarytree
-    ~$ py.test tests.py --verbose
+    ~$ py.test --verbose
 
 To run the unit tests with coverage report:
 
@@ -75,9 +74,9 @@ To run the unit tests with coverage report:
     ~$ pip install coverage pytest pytest-cov
     ~$ git clone https://github.com/joowani/binarytree.git
     ~$ cd binarytree
-    ~$ py.test tests.py --verbose --cov-report=html --cov=binarytree
-    ~$ # Open the generated file htmlcov/index.html in a browser
+    ~$ py.test --verbose --cov=binarytree --cov-report=html
 
+    # Open the generated file htmlcov/index.html in a browser
 
 Documentation
 =============
@@ -92,15 +91,14 @@ machine:
     ~$ git clone https://github.com/joowani/binarytree.git
     ~$ cd binarytree/docs
     ~$ sphinx-build . build
-    ~$ # Open the generated file build/index.html in a browser
 
+    # Open the generated file build/index.html in a browser
 
-As always, thanks for your contribution!
+As always, thank you for your contribution!
 
 .. _rebased: https://git-scm.com/book/en/v2/Git-Branching-Rebasing
 .. _dev: https://github.com/joowani/binarytree/tree/dev
 .. _GitHub: https://github.com/joowani/binarytree
-.. _properly: https://stackoverflow.com/questions/159720
 .. _PEP8: https://www.python.org/dev/peps/pep-0008/
 .. _coverage: https://coveralls.io/github/joowani/binarytree
 .. _this: http://coverage.readthedocs.io/en/latest/excluding.html

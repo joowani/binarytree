@@ -1,13 +1,14 @@
 API Specification
 -----------------
 
-This page contains the API specification for the
-:ref:`binarytree.Node <Class: binarytree.Node>` class, and utility functions
-:ref:`binarytree.build <Function: binarytree.build>`,
-:ref:`binarytree.tree <Function: binarytree.tree>`,
-:ref:`binarytree.bst <Function: binarytree.bst>` and
-:ref:`binarytree.heap <Function: binarytree.heap>`.
+This page covers the API specification for the following classes and utility
+functions:
 
+* :class:`binarytree.Node`
+* :func:`binarytree.build`
+* :func:`binarytree.tree`
+* :func:`binarytree.bst`
+* :func:`binarytree.heap`
 
 Class: binarytree.Node
 ======================
@@ -16,26 +17,22 @@ Class: binarytree.Node
     :members:
     :special-members:
     :private-members:
-    :exclude-members: __weakref__, __repr__, __setattr__
-
+    :exclude-members: __weakref__, __repr__, __setattr__, __init__
 
 Function: binarytree.build
 ==========================
 
 .. autofunction:: binarytree.build
 
-
 Function: binarytree.tree
 =========================
 
 .. autofunction:: binarytree.tree
 
-
 Function: binarytree.bst
 ========================
 
 .. autofunction:: binarytree.bst
-
 
 Function: binarytree.heap
 =========================

@@ -1,15 +1,21 @@
 from setuptools import setup, find_packages
 
-from binarytree.version import __version__
+version = {}
+with open("./binarytree/version.py") as fp:
+    exec(fp.read(), version)
+
+with open('./README.rst') as fp:
+    description = fp.read()
 
 setup(
     name='binarytree',
     description='Python Library for Learning Binary Trees',
-    version=__version__,
+    long_description=description,
+    version=version['__version__'],
     author='Joohwan Oh',
     author_email='joohwan.oh@outlook.com',
     url='https://github.com/joowani/binarytree',
-    packages=find_packages(),
+    packages=find_packages(exclude=['tests']),
     include_package_data=True,
     tests_require=['pytest', 'flake8'],
     license='MIT',

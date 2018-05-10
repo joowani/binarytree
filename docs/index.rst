@@ -6,16 +6,12 @@ Welcome to the documentation for **binarytree**!
 **Binarytree** is a Python library which provides a simple API to generate,
 visualize, inspect and manipulate binary trees. It allows you to skip the
 tedious work of setting up test data, and dive straight into practising your
-algorithms! Heaps and BSTs (binary search trees) are also supported.
+algorithms. Heaps and BSTs (binary search trees) are also supported.
 
 Requirements
 ============
 
 - Python 2.7, 3.4, 3.5 or 3.6
-- Pip_ installer
-
-.. _Pip: https://pip.pypa.io
-
 
 Installation
 ============
@@ -38,7 +34,6 @@ You may need to use ``sudo`` depending on your environment.
 .. _PyPi: https://pypi.python.org/pypi/binarytree
 .. _GitHub: https://github.com/joowani/binarytree
 
-
 Contents
 ========
 
@@ -46,6 +41,6 @@ Contents
     :maxdepth: 1
 
     overview
-    api
+    specs
     exceptions
     contributing
