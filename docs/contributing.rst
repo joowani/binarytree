@@ -15,7 +15,7 @@ following **requirements**:
 * Correct and consistent style: Sphinx_-compatible docstrings, correct snake
   and camel casing, and PEP8_ compliance (see below).
 * No classes/methods/functions with missing docstrings or commented-out lines.
-  You can take a look at the existing code in binarytree for examples.
+  You can take a look at the source code on GitHub_ for examples.
 * The test coverage_ remains at %100. You may find yourself having to write
   superfluous unit tests to keep this number up. If a piece of code is trivial
   and has no need for tests, use this_ to exclude it from coverage.
@@ -82,7 +82,7 @@ Documentation
 =============
 
 The documentation (including the README) is written in reStructuredText_ and
-uses Sphinx_. To build the HTML version of the documentation on your local
+uses Sphinx_. To build an HTML version of the documentation on your local
 machine:
 
 .. code-block:: bash
