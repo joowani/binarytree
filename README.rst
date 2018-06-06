@@ -138,7 +138,7 @@ Generate and pretty-print various types of binary trees:
 Use the `binarytree.Node`_ class to build your own trees:
 
 .. _binarytree.Node:
-    http://binarytree.readthedocs.io/en/latest/api.html#class-binarytree-node
+    http://binarytree.readthedocs.io/en/latest/specs.html#class-binarytree-node
 
 .. code-block:: python
 
