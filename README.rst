@@ -1,4 +1,4 @@
-Binarytree: Python Library for Learning Binary Trees
+Binarytree: Python Library for Studying Binary Trees
 ----------------------------------------------------
 
 .. image:: https://travis-ci.org/joowani/binarytree.svg?branch=master

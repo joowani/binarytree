@@ -9,7 +9,7 @@ with open('./README.rst') as fp:
 
 setup(
     name='binarytree',
-    description='Python Library for Learning Binary Trees',
+    description='Python Library for Studying Binary Trees',
     long_description=description,
     version=version['__version__'],
     author='Joohwan Oh',
