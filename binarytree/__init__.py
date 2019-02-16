@@ -325,6 +325,56 @@ class Node(object):
         self.left = left
         self.right = right
 
+    def find_node(self, value):
+        if value == self.value:
+            return self
+        elif value < self.value and self.left is not None:
+            return self.left.find_node(value)
+        elif value > self.value and self.right is not None:
+            return self.right.find_node(value)
+        else:
+            return None
+
+    def insert_node(self, value, first_run=True):
+        if first_run and self.find_node(value) is not None:
+            return
+
+        elif self.value == None:
+            self.value = value
+
+        elif value < self.value:
+            if self.left is None:
+                self.left = Node(value)
+            else:
+                self.left.insert_node(value, False)
+
+        elif value > self.value:
+            if self.right is None:
+                self.right = Node(value)
+            else:
+                self.right.insert_node(value, False)
+
+    def remove_node(self, value, first_run=True):
+        if first_run and self.find_node(value) is None:
+            return
+
+        elif value == self.value:
+            self.left = None
+            self.right = None
+            self.value = None
+
+        elif value < self.value:
+            if self.left is not None and value == self.left.value:
+                self.left = None
+            else:
+                self.left.remove_node(value, False)
+
+        elif value > self.value:
+            if self.right is not None and value == self.right.value:
+                self.right = None
+            else:
+                self.right.remove_node(value, False)
+
     def __repr__(self):
         """Return the string representation of the current node.
 
@@ -422,6 +472,9 @@ class Node(object):
             if obj is not None and not isinstance(obj, Node):
                 raise NodeTypeError(
                     'right child must be a Node instance')
+        elif attr == 'value' and obj is None:
+            object.__setattr__(self, attr, obj)
+            return
         elif attr == 'value' and not isinstance(obj, numbers.Number):
             raise NodeValueError('node value must be a number')
 
