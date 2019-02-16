@@ -1,6 +1,3 @@
-from __future__ import absolute_import, unicode_literals
-
-
 class BinaryTreeError(Exception):
     """Base (catch-all) binarytree exception."""
 
@@ -27,7 +24,3 @@ class NodeTypeError(BinaryTreeError):
 
 class NodeValueError(BinaryTreeError):
     """Node value was not a number (e.g. int, float)."""
-
-
-class TreeHeightError(BinaryTreeError):
-    """Tree height was invalid."""
