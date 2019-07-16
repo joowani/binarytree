@@ -57,6 +57,27 @@ def _is_bst(root, min_value=float('-inf'), max_value=float('inf')):
     )
 
 
+def _is_symmetric(root):
+    """Check if the binary tree is symmetric
+
+    :param root: Root node of the binary tree
+    :type root: binarytree.Node | None
+    :return: True if the binary tree is symmetric, False otherwise.
+    :rtype: bool
+    """
+    def symmetric_helper(left_subtree, right_subtree):
+        if left_subtree is None and right_subtree is None:
+            return True
+        if left_subtree is None or right_subtree is None:
+            return False
+        return (
+            left_subtree.value == right_subtree.value and
+            symmetric_helper(left_subtree.left, right_subtree.right) and
+            symmetric_helper(left_subtree.right, right_subtree.left)
+        )
+    return symmetric_helper(root, root)
+
+
 def _validate_tree_height(height):
     """Check if the height of the binary tree is valid.
 
@@ -1104,6 +1125,40 @@ class Node(object):
         return _is_bst(self, float('-inf'), float('inf'))
 
     @property
+    def is_symmetric(self):
+        """Check if the binary tree is symmetric.
+
+        * Left subtree is a mirror of the right subtree around the center
+
+        :return: True if the binary tree is a symmetric, False otherwise.
+        :rtype: bool
+
+        **Example**:
+
+        .. doctest::
+
+            >>> from binarytree import Node
+            >>> root = Node(1)
+            >>> root.left = Node(2)
+            >>> root.right = Node(2)
+            >>> root.left.left = Node(3)
+            >>> root.left.right = Node(4)
+            >>> root.right.left = Node(4)
+            >>> root.right.right = Node(3)
+            >>> print(root)
+            <BLANKLINE>
+                __1__
+               /     \\
+              2       2
+             / \\     / \\
+            3   4   4   3
+            <BLANKLINE>
+            >>> root.is_symmetric
+            True
+        """
+        return _is_symmetric(self)
+
+    @property
     def is_max_heap(self):
         """Check if the binary tree is a `max heap`_.
 
@@ -1424,6 +1479,8 @@ class Node(object):
             False
             >>> props['is_complete']    # equivalent to root.is_complete
             True
+            >>> props['is_symmetric']   # equivalent to root.is_symmetric
+            False
             >>> props['is_max_heap']    # equivalent to root.is_max_heap
             False
             >>> props['is_min_heap']    # equivalent to root.is_min_heap
@@ -1436,7 +1493,8 @@ class Node(object):
         properties = _get_tree_properties(self)
         properties.update({
             'is_bst': _is_bst(self),
-            'is_balanced': _is_balanced(self) >= 0
+            'is_balanced': _is_balanced(self) >= 0,
+            'is_symmetric': _is_symmetric(self)
         })
         return properties
 
