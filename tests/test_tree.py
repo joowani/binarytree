@@ -414,6 +414,7 @@ def test_tree_properties():
         'is_min_heap': True,
         'is_perfect': True,
         'is_strict': True,
+        'is_symmetric': True,
         'leaf_count': 1,
         'max_leaf_depth': 0,
         'max_node_value': 1,
@@ -429,6 +430,7 @@ def test_tree_properties():
     assert root.is_min_heap is True
     assert root.is_perfect is True
     assert root.is_strict is True
+    assert root.is_symmetric is True
     assert root.leaf_count == 1
     assert root.max_leaf_depth == 0
     assert root.max_node_value == 1
@@ -446,6 +448,7 @@ def test_tree_properties():
         'is_min_heap': True,
         'is_perfect': False,
         'is_strict': False,
+        'is_symmetric': False,
         'leaf_count': 1,
         'max_leaf_depth': 1,
         'max_node_value': 2,
@@ -461,6 +464,7 @@ def test_tree_properties():
     assert root.is_min_heap is True
     assert root.is_perfect is False
     assert root.is_strict is False
+    assert root.is_symmetric is False
     assert root.leaf_count == 1
     assert root.max_leaf_depth == 1
     assert root.max_node_value == 2
@@ -478,6 +482,7 @@ def test_tree_properties():
         'is_min_heap': True,
         'is_perfect': True,
         'is_strict': True,
+        'is_symmetric': False,
         'leaf_count': 2,
         'max_leaf_depth': 1,
         'max_node_value': 3,
@@ -493,6 +498,7 @@ def test_tree_properties():
     assert root.is_min_heap is True
     assert root.is_perfect is True
     assert root.is_strict is True
+    assert root.is_symmetric is False
     assert root.leaf_count == 2
     assert root.max_leaf_depth == 1
     assert root.max_node_value == 3
@@ -510,6 +516,7 @@ def test_tree_properties():
         'is_min_heap': True,
         'is_perfect': False,
         'is_strict': False,
+        'is_symmetric': False,
         'leaf_count': 2,
         'max_leaf_depth': 2,
         'max_node_value': 4,
@@ -525,6 +532,7 @@ def test_tree_properties():
     assert root.is_min_heap is True
     assert root.is_perfect is False
     assert root.is_strict is False
+    assert root.is_symmetric is False
     assert root.leaf_count == 2
     assert root.max_leaf_depth == 2
     assert root.max_node_value == 4
@@ -542,6 +550,7 @@ def test_tree_properties():
         'is_min_heap': False,
         'is_perfect': False,
         'is_strict': False,
+        'is_symmetric': False,
         'leaf_count': 2,
         'max_leaf_depth': 2,
         'max_node_value': 5,
@@ -557,6 +566,7 @@ def test_tree_properties():
     assert root.is_min_heap is False
     assert root.is_perfect is False
     assert root.is_strict is False
+    assert root.is_symmetric is False
     assert root.leaf_count == 2
     assert root.max_leaf_depth == 2
     assert root.max_node_value == 5
@@ -574,6 +584,7 @@ def test_tree_properties():
         'is_min_heap': False,
         'is_perfect': False,
         'is_strict': False,
+        'is_symmetric': False,
         'leaf_count': 2,
         'max_leaf_depth': 3,
         'max_node_value': 6,
@@ -589,6 +600,7 @@ def test_tree_properties():
     assert root.is_min_heap is False
     assert root.is_perfect is False
     assert root.is_strict is False
+    assert root.is_symmetric is False
     assert root.leaf_count == 2
     assert root.max_leaf_depth == 3
     assert root.max_node_value == 6
@@ -606,6 +618,7 @@ def test_tree_properties():
         'is_min_heap': False,
         'is_perfect': False,
         'is_strict': False,
+        'is_symmetric': False,
         'leaf_count': 2,
         'max_leaf_depth': 3,
         'max_node_value': 7,
@@ -621,6 +634,7 @@ def test_tree_properties():
     assert root.is_min_heap is False
     assert root.is_perfect is False
     assert root.is_strict is False
+    assert root.is_symmetric is False
     assert root.leaf_count == 2
     assert root.max_leaf_depth == 3
     assert root.max_node_value == 7
@@ -861,6 +875,7 @@ def test_heap_float_values():
             assert root.is_min_heap == root_copy.is_min_heap
             assert root.is_perfect == root_copy.is_perfect
             assert root.is_strict == root_copy.is_strict
+            assert root.is_symmetric == root_copy.is_symmetric
             assert root.leaf_count == root_copy.leaf_count
             assert root.max_leaf_depth == root_copy.max_leaf_depth
             assert root.max_node_value == root_copy.max_node_value + 0.1
