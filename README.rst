@@ -43,16 +43,14 @@ algorithms. Heaps and BSTs (binary search trees) are also supported.
 Announcements
 =============
 
-* **Binarytree** version `4.0`_ is now out!
 * Please see the releases_ page for details on the latest updates.
 
-.. _4.0: https://github.com/joowani/binarytree/releases/tag/4.0.0
 .. _releases: https://github.com/joowani/binarytree/releases
 
 Requirements
 ============
 
-- Python 2.7, 3.4, 3.5 or 3.6.
+- Python 2.7, 3.4, 3.5, 3.6 or 3.7.
 
 Installation
 ============
