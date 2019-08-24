@@ -58,9 +58,9 @@ def _is_bst(root, min_value=float('-inf'), max_value=float('inf')):
 
 
 def _is_symmetric(root):
-    """Check if the binary tree is symmetric
+    """Check if the binary tree is symmetric.
 
-    :param root: Root node of the binary tree
+    :param root: Root node of the binary tree.
     :type root: binarytree.Node | None
     :return: True if the binary tree is symmetric, False otherwise.
     :rtype: bool
@@ -323,7 +323,7 @@ class Node(object):
     current node and its descendants.
 
     :param value: Node value (must be a number).
-    :type value: int | float
+    :type value: int | float | numbers.Number
     :param left: Left child node (default: None).
     :type left: binarytree.Node | None
     :param right: Right child node (default: None).
@@ -1128,7 +1128,9 @@ class Node(object):
     def is_symmetric(self):
         """Check if the binary tree is symmetric.
 
-        * Left subtree is a mirror of the right subtree around the center
+        A binary tree is symmetric if it meets the following criteria:
+
+        * Left subtree is a mirror of the right subtree about the root node.
 
         :return: True if the binary tree is a symmetric, False otherwise.
         :rtype: bool
@@ -1138,6 +1140,7 @@ class Node(object):
         .. doctest::
 
             >>> from binarytree import Node
+            >>>
             >>> root = Node(1)
             >>> root.left = Node(2)
             >>> root.right = Node(2)
@@ -1145,6 +1148,7 @@ class Node(object):
             >>> root.left.right = Node(4)
             >>> root.right.left = Node(4)
             >>> root.right.right = Node(3)
+            >>>
             >>> print(root)
             <BLANKLINE>
                 __1__

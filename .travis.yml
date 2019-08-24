@@ -1,12 +1,20 @@
-language: python
 sudo: false
-python:
-    - 2.7
-    - 3.4
-    - 3.5
-    - 3.6
+language: python
+matrix:
+  include:
+    - python: 2.7
+    - python: 3.4
+    - python: 3.5
+    - python: 3.6
+    - python: 3.7
+      dist: xenial
+      sudo: true
 install:
-    - pip install flake8 mock pytest pytest-cov python-coveralls sphinx sphinx_rtd_theme
+    - pip install flake8 mock
+    - pip install pytest==3.5.1
+    - pip install pytest-cov==2.5.1
+    - pip install python-coveralls==2.9.1
+    - pip install sphinx sphinx_rtd_theme
     - pip install .
 script:
     - python -m flake8
