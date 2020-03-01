@@ -18,7 +18,7 @@ from binarytree.exceptions import (
 
 
 def _is_balanced(root):
-    """Return the height if the binary tree is balanced, -1 otherwise.
+    """Return the tree height + 1 if balanced, -1 otherwise.
 
     :param root: Root node of the binary tree.
     :type root: binarytree.Node | None
