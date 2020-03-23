@@ -1545,7 +1545,7 @@ class Node(object):
                 node_stack.append(node)
                 node = node.left
             else:
-                node_stack = stack.pop()
+                node = node_stack.pop()
                 result.append(node)
                 node = node.right
       
