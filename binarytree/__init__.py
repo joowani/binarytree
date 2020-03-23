@@ -1540,17 +1540,15 @@ class Node(object):
         result = []
         node = self
 
-        while True:
+        while node_stack or node:
             if node is not None:
                 node_stack.append(node)
                 node = node.left
-            elif len(node_stack) > 0:
-                node = node_stack.pop()
+            else:
+                node_stack = stack.pop()
                 result.append(node)
                 node = node.right
-            else:
-                break
-
+      
         return result
 
     @property
