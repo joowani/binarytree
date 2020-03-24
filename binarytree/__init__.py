@@ -1548,7 +1548,7 @@ class Node(object):
                 node = node_stack.pop()
                 result.append(node)
                 node = node.right
-      
+
         return result
 
     @property
