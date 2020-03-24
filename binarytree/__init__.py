@@ -1540,7 +1540,7 @@ class Node(object):
         result = []
         node = self
 
-        while node_stack or node:
+        while len(node_stack) > 0 or node:
             if node is not None:
                 node_stack.append(node)
                 node = node.left
