@@ -8,7 +8,7 @@ By default, **binarytree** uses the following class to represent a node:
     class Node(object):
 
         def __init__(self, value, left=None, right=None):
-            self.value = value  # The node value
+            self.val = value    # The node value
             self.left = left    # Left child
             self.right = right  # Right child
 

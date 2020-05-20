@@ -24,39 +24,48 @@ from tests.utils import (
 REPETITIONS = 20
 
 
-@pytest.mark.order1
 def test_node_set_attributes():
     root = Node(1)
     assert root.left is None
     assert root.right is None
+    assert root.val == 1
     assert root.value == 1
+    assert repr(root) == 'Node(1)'
+
+    root.value = 2
+    assert root.value == 2
+    assert root.val == 2
+    assert repr(root) == 'Node(2)'
+
+    root.val = 1
+    assert root.value == 1
+    assert root.val == 1
     assert repr(root) == 'Node(1)'
 
     left_child = Node(2)
     root.left = left_child
     assert root.left is left_child
     assert root.right is None
-    assert root.value == 1
+    assert root.val == 1
     assert root.left.left is None
     assert root.left.right is None
-    assert root.left.value == 2
+    assert root.left.val == 2
     assert repr(left_child) == 'Node(2)'
 
     right_child = Node(3)
     root.right = right_child
     assert root.left is left_child
     assert root.right is right_child
-    assert root.value == 1
+    assert root.val == 1
     assert root.right.left is None
     assert root.right.right is None
-    assert root.right.value == 3
+    assert root.right.val == 3
     assert repr(right_child) == 'Node(3)'
 
     last_node = Node(4)
     left_child.right = last_node
     assert root.left.right is last_node
-    assert root.left.right.value == 4
-    assert repr(last_node) == 'Node(4)'
+    assert repr(root.left.right) == 'Node(4)'
 
     with pytest.raises(NodeValueError) as err:
         # noinspection PyTypeChecker
@@ -74,6 +83,11 @@ def test_node_set_attributes():
     assert str(err.value) == 'right child must be a Node instance'
 
     with pytest.raises(NodeValueError) as err:
+        root.val = 'this_is_not_an_integer'
+    assert root.val == 1
+    assert str(err.value) == 'node value must be a number'
+
+    with pytest.raises(NodeValueError) as err:
         root.value = 'this_is_not_an_integer'
     assert root.value == 1
     assert str(err.value) == 'node value must be a number'
@@ -89,36 +103,36 @@ def test_node_set_attributes():
     assert str(err.value) == 'right child must be a Node instance'
 
 
-@pytest.mark.order2
+# noinspection PyUnresolvedReferences
 def test_tree_build():
     root = build([])
     assert root is None
 
     root = build([1])
-    assert root.value == 1
+    assert root.val == 1
     assert root.left is None
     assert root.right is None
 
     root = build([1, 2])
-    assert root.value == 1
-    assert root.left.value == 2
+    assert root.val == 1
+    assert root.left.val == 2
     assert root.right is None
 
     root = build([1, 2, 3])
-    assert root.value == 1
-    assert root.left.value == 2
-    assert root.right.value == 3
+    assert root.val == 1
+    assert root.left.val == 2
+    assert root.right.val == 3
     assert root.left.left is None
     assert root.left.right is None
     assert root.right.left is None
     assert root.right.right is None
 
     root = build([1, 2, 3, None, 4])
-    assert root.value == 1
-    assert root.left.value == 2
-    assert root.right.value == 3
+    assert root.val == 1
+    assert root.left.val == 2
+    assert root.right.val == 3
     assert root.left.left is None
-    assert root.left.right.value == 4
+    assert root.left.right.val == 4
     assert root.right.left is None
     assert root.right.right is None
     assert root.left.right.left is None
@@ -133,7 +147,6 @@ def test_tree_build():
     assert str(err.value) == 'parent node missing at index 1'
 
 
-@pytest.mark.order3
 def test_tree_get_node():
     root = Node(1)
     root.left = Node(2)
@@ -159,7 +172,6 @@ def test_tree_get_node():
     assert str(err.value) == 'node index must be a non-negative int'
 
 
-@pytest.mark.order4
 def test_tree_set_node():
     root = Node(1)
     root.left = Node(2)
@@ -185,20 +197,20 @@ def test_tree_set_node():
     assert str(err.value) == 'parent node missing at index 49'
 
     root[10] = new_node_1
-    assert root.value == 1
-    assert root.left.value == 2
-    assert root.right.value == 3
-    assert root.left.left.value == 4
-    assert root.left.right.value == 5
-    assert root.left.right.left.value == 6
+    assert root.val == 1
+    assert root.left.val == 2
+    assert root.right.val == 3
+    assert root.left.left.val == 4
+    assert root.left.right.val == 5
+    assert root.left.right.left.val == 6
     assert root.left.right.right is new_node_1
 
     root[4] = new_node_2
-    assert root.value == 1
-    assert root.left.value == 2
-    assert root.right.value == 3
-    assert root.left.left.value == 4
-    assert root.left.right.value == 8
+    assert root.val == 1
+    assert root.left.val == 2
+    assert root.right.val == 3
+    assert root.left.left.val == 4
+    assert root.left.right.val == 8
     assert root.left.right.left is None
     assert root.left.right.right is None
 
@@ -208,7 +220,6 @@ def test_tree_set_node():
     assert root.right is new_node_2
 
 
-@pytest.mark.order5
 def test_tree_del_node():
     root = Node(1)
     root.left = Node(2)
@@ -235,23 +246,23 @@ def test_tree_del_node():
 
     del root[3]
     assert root.left.left is None
-    assert root.left.value == 2
-    assert root.left.right.value == 5
+    assert root.left.val == 2
+    assert root.left.right.val == 5
     assert root.left.right.right is None
-    assert root.left.right.left.value == 6
+    assert root.left.right.left.val == 6
     assert root.left.right.left.left is None
     assert root.left.right.left.right is None
-    assert root.right.value == 3
+    assert root.right.val == 3
     assert root.right.left is None
     assert root.right.right is None
     assert root.size == 5
 
     del root[2]
     assert root.left.left is None
-    assert root.left.value == 2
-    assert root.left.right.value == 5
+    assert root.left.val == 2
+    assert root.left.right.val == 5
     assert root.left.right.right is None
-    assert root.left.right.left.value == 6
+    assert root.left.right.left.val == 6
     assert root.left.right.left.left is None
     assert root.left.right.left.right is None
     assert root.right is None
@@ -269,7 +280,6 @@ def test_tree_del_node():
     assert root.size == 1
 
 
-@pytest.mark.order6
 def test_tree_print_no_index():
     for printer in [builtin_print, pprint_default]:
         lines = printer([1])
@@ -312,7 +322,6 @@ def test_tree_print_no_index():
                          '8   5   6   7']
 
 
-@pytest.mark.order7
 def test_tree_print_with_index():
     lines = pprint_with_index([1])
     assert lines == ['0:1']
@@ -354,7 +363,6 @@ def test_tree_print_with_index():
                      '3:8     4:5     5:6     6:7']
 
 
-@pytest.mark.order8
 def test_tree_validate():
 
     class TestNode(Node):
@@ -389,7 +397,7 @@ def test_tree_validate():
 
     root = TestNode(1)
     root.right = TestNode(2)
-    root.right.value = 'not_an_integer'
+    root.right.val = 'not_an_integer'
     with pytest.raises(NodeValueError) as err:
         root.validate()
     assert str(err.value) == 'invalid node value at index 2'
@@ -402,7 +410,6 @@ def test_tree_validate():
     assert str(err.value) == 'cyclic node reference at index 4'
 
 
-@pytest.mark.order9
 def test_tree_properties():
     root = Node(1)
     assert root.properties == {
@@ -643,7 +650,6 @@ def test_tree_properties():
     assert root.size == len(root) == 7
 
 
-@pytest.mark.order10
 def test_tree_traversal():
     n1 = Node(1)
     assert n1.levels == [[n1]]
@@ -707,7 +713,6 @@ def test_tree_list_representation():
     assert root.values == [1, 2, 3, 6, 7, 4, 5]
 
 
-@pytest.mark.order11
 def test_tree_generation():
     for invalid_height in ['foo', -1, None]:
         with pytest.raises(TreeHeightError) as err:
@@ -719,7 +724,7 @@ def test_tree_generation():
     assert root.height == 0
     assert root.left is None
     assert root.right is None
-    assert isinstance(root.value, int)
+    assert isinstance(root.val, int)
 
     for _ in range(REPETITIONS):
         random_height = random.randint(1, 9)
@@ -737,7 +742,6 @@ def test_tree_generation():
         assert root.is_strict is True
 
 
-@pytest.mark.order12
 def test_bst_generation():
     for invalid_height in ['foo', -1, None]:
         with pytest.raises(TreeHeightError) as err:
@@ -749,7 +753,7 @@ def test_bst_generation():
     assert root.height == 0
     assert root.left is None
     assert root.right is None
-    assert isinstance(root.value, int)
+    assert isinstance(root.val, int)
 
     for _ in range(REPETITIONS):
         random_height = random.randint(1, 9)
@@ -774,7 +778,6 @@ def test_bst_generation():
         assert root.is_strict is True
 
 
-@pytest.mark.order13
 def test_heap_generation():
     for invalid_height in ['foo', -1, None]:
         with pytest.raises(TreeHeightError) as err:
@@ -786,7 +789,7 @@ def test_heap_generation():
     assert root.height == 0
     assert root.left is None
     assert root.right is None
-    assert isinstance(root.value, int)
+    assert isinstance(root.val, int)
 
     for _ in range(REPETITIONS):
         random_height = random.randint(1, 9)
@@ -816,7 +819,6 @@ def test_heap_generation():
         assert root.height == random_height
 
 
-@pytest.mark.order13
 def test_heap_float_values():
     root = Node(1.0)
     root.left = Node(0.5)

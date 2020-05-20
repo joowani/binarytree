@@ -9,7 +9,7 @@ Binarytree: Python Library for Studying Binary Trees
     :target: https://badge.fury.io/py/binarytree
     :alt: Package Version
 
-.. image:: https://img.shields.io/badge/python-2.7%2C%203.5%2C%203.6%2C%203.7-blue.svg
+.. image:: https://img.shields.io/badge/python-2.7%2C%203.5%2C%203.6%2C%203.7%2C%203.8-blue.svg
     :target: https://github.com/joowani/binarytree
     :alt: Python Versions
 
@@ -50,7 +50,7 @@ Announcements
 Requirements
 ============
 
-- Python 2.7, 3.4, 3.5, 3.6 or 3.7.
+- Python 2.7, 3.4, 3.5, 3.6, 3.7, 3.8
 
 Installation
 ============
@@ -82,7 +82,7 @@ By default, **binarytree** uses the following class to represent a node:
     class Node(object):
 
         def __init__(self, value, left=None, right=None):
-            self.value = value  # The node value
+            self.val = value    # The node value
             self.left = left    # Left child
             self.right = right  # Right child
 

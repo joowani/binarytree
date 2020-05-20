@@ -16,6 +16,11 @@ from binarytree.exceptions import (
     NodeReferenceError,
 )
 
+LEFT = 'left'
+RIGHT = 'right'
+VAL = 'val'
+VALUE = 'value'
+
 
 def _is_balanced(root):
     """Return the tree height + 1 if balanced, -1 otherwise.
@@ -51,9 +56,9 @@ def _is_bst(root, min_value=float('-inf'), max_value=float('inf')):
     if root is None:
         return True
     return (
-        min_value < root.value < max_value and
-        _is_bst(root.left, min_value, root.value) and
-        _is_bst(root.right, root.value, max_value)
+        min_value < root.val < max_value and
+        _is_bst(root.left, min_value, root.val) and
+        _is_bst(root.right, root.val, max_value)
     )
 
 
@@ -65,16 +70,18 @@ def _is_symmetric(root):
     :return: True if the binary tree is symmetric, False otherwise.
     :rtype: bool
     """
+
     def symmetric_helper(left_subtree, right_subtree):
         if left_subtree is None and right_subtree is None:
             return True
         if left_subtree is None or right_subtree is None:
             return False
         return (
-            left_subtree.value == right_subtree.value and
+            left_subtree.val == right_subtree.val and
             symmetric_helper(left_subtree.left, right_subtree.right) and
             symmetric_helper(left_subtree.right, right_subtree.left)
         )
+
     return symmetric_helper(root, root)
 
 
@@ -184,9 +191,9 @@ def _build_tree_string(root, curr_index, index=False, delimiter='-'):
     line1 = []
     line2 = []
     if index:
-        node_repr = '{}{}{}'.format(curr_index, delimiter, root.value)
+        node_repr = '{}{}{}'.format(curr_index, delimiter, root.val)
     else:
-        node_repr = str(root.value)
+        node_repr = str(root.val)
 
     new_root_width = gap_size = len(node_repr)
 
@@ -246,26 +253,26 @@ def _get_tree_properties(root):
     """
     is_descending = True
     is_ascending = True
-    min_node_value = root.value
-    max_node_value = root.value
+    min_node_value = root.val
+    max_node_value = root.val
     size = 0
     leaf_count = 0
     min_leaf_depth = 0
     max_leaf_depth = -1
     is_strict = True
     is_complete = True
-    current_nodes = [root]
+    current_level = [root]
     non_full_node_seen = False
 
-    while len(current_nodes) > 0:
+    while len(current_level) > 0:
         max_leaf_depth += 1
-        next_nodes = []
+        next_level = []
 
-        for node in current_nodes:
+        for node in current_level:
             size += 1
-            value = node.value
-            min_node_value = min(value, min_node_value)
-            max_node_value = max(value, max_node_value)
+            val = node.val
+            min_node_value = min(val, min_node_value)
+            max_node_value = max(val, max_node_value)
 
             # Node is a leaf.
             if node.left is None and node.right is None:
@@ -274,21 +281,21 @@ def _get_tree_properties(root):
                 leaf_count += 1
 
             if node.left is not None:
-                if node.left.value > value:
+                if node.left.val > val:
                     is_descending = False
-                elif node.left.value < value:
+                elif node.left.val < val:
                     is_ascending = False
-                next_nodes.append(node.left)
+                next_level.append(node.left)
                 is_complete = not non_full_node_seen
             else:
                 non_full_node_seen = True
 
             if node.right is not None:
-                if node.right.value > value:
+                if node.right.val > val:
                     is_descending = False
-                elif node.right.value < value:
+                elif node.right.val < val:
                     is_ascending = False
-                next_nodes.append(node.right)
+                next_level.append(node.right)
                 is_complete = not non_full_node_seen
             else:
                 non_full_node_seen = True
@@ -296,7 +303,7 @@ def _get_tree_properties(root):
             # If we see a node with only one child, it is not strict
             is_strict &= (node.left is None) == (node.right is None)
 
-        current_nodes = next_nodes
+        current_level = next_level
 
     return {
         'height': max_leaf_depth,
@@ -317,10 +324,10 @@ def _get_tree_properties(root):
 class Node(object):
     """Represents a binary tree node.
 
-    This class provides methods and properties for managing the current node
-    instance, and the binary tree in which the node is the root of. When a
-    docstring in this class mentions "binary tree", it is referring to the
-    current node and its descendants.
+    This class provides methods and properties for managing the current node,
+    and the binary tree in which the node is the root of. When a docstring in
+    this class mentions "binary tree", it is referring to the current node as
+    well as all its descendants.
 
     :param value: Node value (must be a number).
     :type value: int | float | numbers.Number
@@ -342,7 +349,7 @@ class Node(object):
         if right is not None and not isinstance(right, Node):
             raise NodeTypeError('right child must be a Node instance')
 
-        self.value = value
+        self.value = self.val = value
         self.left = left
         self.right = right
 
@@ -361,7 +368,7 @@ class Node(object):
             >>> Node(1)
             Node(1)
         """
-        return 'Node({})'.format(self.value)
+        return 'Node({})'.format(self.val)
 
     def __str__(self):
         """Return the pretty-print string for the binary tree.
@@ -430,21 +437,25 @@ class Node(object):
             >>> from binarytree import Node
             >>>
             >>> node = Node(1)
-            >>> node.value = 'invalid'  # doctest: +IGNORE_EXCEPTION_DETAIL
+            >>> node.val = 'invalid'  # doctest: +IGNORE_EXCEPTION_DETAIL
             Traceback (most recent call last):
              ...
             NodeValueError: node value must be a number
         """
-        if attr == 'left':
+        if attr == LEFT:
             if obj is not None and not isinstance(obj, Node):
-                raise NodeTypeError(
-                    'left child must be a Node instance')
-        elif attr == 'right':
+                raise NodeTypeError('left child must be a Node instance')
+        elif attr == RIGHT:
             if obj is not None and not isinstance(obj, Node):
-                raise NodeTypeError(
-                    'right child must be a Node instance')
-        elif attr == 'value' and not isinstance(obj, numbers.Number):
-            raise NodeValueError('node value must be a number')
+                raise NodeTypeError('right child must be a Node instance')
+        elif attr == VALUE:
+            if not isinstance(obj, numbers.Number):
+                raise NodeValueError('node value must be a number')
+            object.__setattr__(self, VAL, obj)
+        elif attr == VAL:
+            if not isinstance(obj, numbers.Number):
+                raise NodeValueError('node value must be a number')
+            object.__setattr__(self, VALUE, obj)
 
         object.__setattr__(self, attr, obj)
 
@@ -480,17 +491,17 @@ class Node(object):
             >>> [node for node in root]
             [Node(1), Node(2), Node(3), Node(4), Node(5)]
         """
-        current_nodes = [self]
+        current_level = [self]
 
-        while len(current_nodes) > 0:
-            next_nodes = []
-            for node in current_nodes:
+        while len(current_level) > 0:
+            next_level = []
+            for node in current_level:
                 yield node
                 if node.left is not None:
-                    next_nodes.append(node.left)
+                    next_level.append(node.left)
                 if node.right is not None:
-                    next_nodes.append(node.right)
-            current_nodes = next_nodes
+                    next_level.append(node.right)
+            current_level = next_level
 
     def __len__(self):
         """Return the total number of nodes in the binary tree.
@@ -554,15 +565,15 @@ class Node(object):
             raise NodeIndexError(
                 'node index must be a non-negative int')
 
-        current_nodes = [self]
+        current_level = [self]
         current_index = 0
         has_more_nodes = True
 
         while has_more_nodes:
             has_more_nodes = False
-            next_nodes = []
+            next_level = []
 
-            for node in current_nodes:
+            for node in current_level:
                 if current_index == index:
                     if node is None:
                         break
@@ -571,13 +582,13 @@ class Node(object):
                 current_index += 1
 
                 if node is None:
-                    next_nodes.extend((None, None))
+                    next_level.extend((None, None))
                     continue
-                next_nodes.extend((node.left, node.right))
+                next_level.extend((node.left, node.right))
                 if node.left is not None or node.right is not None:
                     has_more_nodes = True
 
-            current_nodes = next_nodes
+            current_level = next_level
 
         raise NodeNotFoundError('node missing at index {}'.format(index))
 
@@ -652,7 +663,7 @@ class Node(object):
             raise NodeNotFoundError(
                 'parent node missing at index {}'.format(parent_index))
 
-        setattr(parent, 'left' if index % 2 else 'right', node)
+        setattr(parent, LEFT if index % 2 else RIGHT, node)
 
     def __delitem__(self, index):
         """Remove the node (or subtree) at the given level-order_ index.
@@ -711,7 +722,7 @@ class Node(object):
             raise NodeNotFoundError(
                 'no node to delete at index {}'.format(index))
 
-        child_attr = 'left' if index % 2 == 1 else 'right'
+        child_attr = LEFT if index % 2 == 1 else RIGHT
         if getattr(parent, child_attr) is None:
             raise NodeNotFoundError(
                 'no node to delete at index {}'.format(index))
@@ -798,11 +809,11 @@ class Node(object):
 
         while has_more_nodes:
             has_more_nodes = False
-            next_nodes = []
+            next_level = []
 
             for node in to_visit:
                 if node is None:
-                    next_nodes.extend((None, None))
+                    next_level.extend((None, None))
                 else:
                     if node in visited:
                         raise NodeReferenceError(
@@ -810,16 +821,16 @@ class Node(object):
                     if not isinstance(node, Node):
                         raise NodeTypeError(
                             'invalid node instance at index {}'.format(index))
-                    if not isinstance(node.value, numbers.Number):
+                    if not isinstance(node.val, numbers.Number):
                         raise NodeValueError(
                             'invalid node value at index {}'.format(index))
                     if node.left is not None or node.right is not None:
                         has_more_nodes = True
                     visited.add(node)
-                    next_nodes.extend((node.left, node.right))
+                    next_level.extend((node.left, node.right))
                 index += 1
 
-            to_visit = next_nodes
+            to_visit = next_level
 
     @property
     def values(self):
@@ -850,26 +861,26 @@ class Node(object):
             >>> root.values
             [1, 2, 3, None, 4]
         """
-        current_nodes = [self]
+        current_level = [self]
         has_more_nodes = True
         values = []
 
         while has_more_nodes:
             has_more_nodes = False
-            next_nodes = []
-            for node in current_nodes:
+            next_level = []
+            for node in current_level:
                 if node is None:
                     values.append(None)
-                    next_nodes.extend((None, None))
+                    next_level.extend((None, None))
                     continue
 
                 if node.left is not None or node.right is not None:
                     has_more_nodes = True
 
-                values.append(node.value)
-                next_nodes.extend((node.left, node.right))
+                values.append(node.val)
+                next_level.extend((node.left, node.right))
 
-            current_nodes = next_nodes
+            current_level = next_level
 
         # Get rid of trailing None's
         while values and values[-1] is None:
@@ -908,20 +919,20 @@ class Node(object):
             >>> root.leaves
             [Node(3), Node(4)]
         """
-        current_nodes = [self]
+        current_level = [self]
         leaves = []
 
-        while len(current_nodes) > 0:
-            next_nodes = []
-            for node in current_nodes:
+        while len(current_level) > 0:
+            next_level = []
+            for node in current_level:
                 if node.left is None and node.right is None:
                     leaves.append(node)
                     continue
                 if node.left is not None:
-                    next_nodes.append(node.left)
+                    next_level.append(node.left)
                 if node.right is not None:
-                    next_nodes.append(node.right)
-            current_nodes = next_nodes
+                    next_level.append(node.right)
+            current_level = next_level
         return leaves
 
     @property
@@ -954,18 +965,18 @@ class Node(object):
             >>> root.levels
             [[Node(1)], [Node(2), Node(3)], [Node(4)]]
         """
-        current_nodes = [self]
+        current_level = [self]
         levels = []
 
-        while len(current_nodes) > 0:
-            next_nodes = []
-            for node in current_nodes:
+        while len(current_level) > 0:
+            next_level = []
+            for node in current_level:
                 if node.left is not None:
-                    next_nodes.append(node.left)
+                    next_level.append(node.left)
                 if node.right is not None:
-                    next_nodes.append(node.right)
-            levels.append(current_nodes)
-            current_nodes = next_nodes
+                    next_level.append(node.right)
+            levels.append(current_level)
+            current_level = next_level
         return levels
 
     @property
@@ -1536,20 +1547,18 @@ class Node(object):
             >>> root.inorder
             [Node(4), Node(2), Node(5), Node(1), Node(3)]
         """
-        node_stack = []
         result = []
+        stack = []
         node = self
 
-        while True:
-            if node is not None:
-                node_stack.append(node)
+        while node or stack:
+            while node:
+                stack.append(node)
                 node = node.left
-            elif len(node_stack) > 0:
-                node = node_stack.pop()
+            if stack:
+                node = stack.pop()
                 result.append(node)
                 node = node.right
-            else:
-                break
 
         return result
 
@@ -1587,17 +1596,15 @@ class Node(object):
             >>> root.preorder
             [Node(1), Node(2), Node(4), Node(5), Node(3)]
         """
-        node_stack = [self]
         result = []
+        stack = [self]
 
-        while len(node_stack) > 0:
-            node = node_stack.pop()
-            result.append(node)
-
-            if node.right is not None:
-                node_stack.append(node.right)
-            if node.left is not None:
-                node_stack.append(node.left)
+        while stack:
+            node = stack.pop()
+            if node:
+                result.append(node)
+                stack.append(node.right)
+                stack.append(node.left)
 
         return result
 
@@ -1635,32 +1642,17 @@ class Node(object):
             >>> root.postorder
             [Node(4), Node(5), Node(2), Node(3), Node(1)]
         """
-        node_stack = []
         result = []
-        node = self
+        stack = [self]
 
-        while True:
-            while node is not None:
-                if node.right is not None:
-                    node_stack.append(node.right)
-                node_stack.append(node)
-                node = node.left
-
-            node = node_stack.pop()
-            if (node.right is not None and
-                    len(node_stack) > 0 and
-                    node_stack[-1] is node.right):
-                node_stack.pop()
-                node_stack.append(node)
-                node = node.right
-            else:
+        while stack:
+            node = stack.pop()
+            if node:
                 result.append(node)
-                node = None
+                stack.append(node.left)
+                stack.append(node.right)
 
-            if len(node_stack) == 0:
-                break
-
-        return result
+        return result[::-1]
 
     @property
     def levelorder(self):
@@ -1697,18 +1689,18 @@ class Node(object):
             >>> root.levelorder
             [Node(1), Node(2), Node(3), Node(4), Node(5)]
         """
-        current_nodes = [self]
+        current_level = [self]
         result = []
 
-        while len(current_nodes) > 0:
-            next_nodes = []
-            for node in current_nodes:
+        while len(current_level) > 0:
+            next_level = []
+            for node in current_level:
                 result.append(node)
                 if node.left is not None:
-                    next_nodes.append(node.left)
+                    next_level.append(node.left)
                 if node.right is not None:
-                    next_nodes.append(node.right)
-            current_nodes = next_nodes
+                    next_level.append(node.right)
+            current_level = next_level
 
         return result
 
@@ -1766,7 +1758,7 @@ def build(values):
             if parent is None:
                 raise NodeNotFoundError(
                     'parent node missing at index {}'.format(parent_index))
-            setattr(parent, 'left' if index % 2 else 'right', node)
+            setattr(parent, LEFT if index % 2 else RIGHT, node)
 
     return nodes[0] if nodes else None
 
@@ -1830,7 +1822,7 @@ def tree(height=3, is_perfect=False):
         inserted = False
 
         while depth < height and not inserted:
-            attr = random.choice(('left', 'right'))
+            attr = random.choice((LEFT, RIGHT))
             if getattr(node, attr) is None:
                 setattr(node, attr, Node(value))
                 inserted = True
@@ -1896,7 +1888,7 @@ def bst(height=3, is_perfect=False):
         inserted = False
 
         while depth < height and not inserted:
-            attr = 'left' if node.value > value else 'right'
+            attr = LEFT if node.val > value else RIGHT
             if getattr(node, attr) is None:
                 setattr(node, attr, Node(value))
                 inserted = True
