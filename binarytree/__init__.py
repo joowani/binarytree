@@ -321,6 +321,57 @@ def _get_tree_properties(root):
     }
 
 
+def get_parent_node(root, node):
+    """Search from the binary tree and return the parent node for require node.
+
+    :param root: Root node of the binary tree.
+    :rtype: binarytree.Node
+    :param node: Require node you want to get its parent node.
+    :rtype: binarytree.Node
+    :return: The parent node of require node.
+    :rtype: binarytree.Node
+
+    **Example**:
+
+        .. doctest::
+
+            >>> from binarytree import Node, get_parent_node
+            >>> root = Node(0)
+            >>> root.left = Node(1)
+            >>> root.right = Node(2)
+            >>> root.left.left = Node(3)
+            >>> print (root)
+            >>>     0
+                   / \
+                  1   2
+                 /
+                3
+            >>> print (get_parent_node(root, root.left.left))
+            >>>   1
+                 /
+                3
+    """
+    if node is None:
+        return None
+    node_stack = []
+    while True:
+        if root is not None:
+            node_stack.append(root)
+            if root.left is node:
+                return root
+            else:
+                root = root.left
+        elif len(node_stack) > 0:
+            root = node_stack.pop()
+            if root.right is node:
+                return root
+            else:
+                root = root.right
+        else:
+            break
+    return None
+
+
 class Node(object):
     """Represents a binary tree node.
 
