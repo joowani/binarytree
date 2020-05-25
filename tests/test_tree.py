@@ -6,7 +6,7 @@ import random
 import pytest
 
 from binarytree import Node, build, tree, bst, heap
-from binarytree import get_parent_node
+from binarytree import get_parent_node, merge_trees
 from binarytree.exceptions import (
     NodeValueError,
     NodeIndexError,
@@ -900,3 +900,31 @@ def test_get_parent_node():
     assert get_parent_node(root, Node(5)) is None
     assert get_parent_node(None, root.left) is None
     assert get_parent_node(root, None) is None
+
+
+@pytest.mark.order15
+def test_merge_trees():
+    root = Node(1)
+    root.left = Node(3)
+    root.right = Node(4)
+    root.left.right = Node(2)
+    root.right.left = Node(3)
+    tree = Node(3)
+    tree.left = Node(1)
+    tree.right = Node(2)
+    tree.left.left = Node(5)
+    tree.left.right = Node(3)
+    mtree = Node(4)
+    mtree.left = Node(4)
+    mtree.right = Node(6)
+    mtree.left.left = Node(5)
+    mtree.left.right = Node(5)
+    mtree.right.left = Node(3)
+    assert merge_trees(root, None) == root
+    assert merge_trees(None, tree) == tree
+    assert merge_trees(root, tree).value == mtree.value
+    assert merge_trees(root, tree).left.value == mtree.left.value
+    assert merge_trees(root, tree).right.value == mtree.right.value
+    assert merge_trees(root, tree).left.left.value == mtree.left.left.value
+    assert merge_trees(root, tree).left.right.value == mtree.left.right.value
+    assert merge_trees(root, tree).right.left.value == mtree.right.left.value

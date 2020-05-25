@@ -326,23 +326,23 @@ def get_parent_node(root, node):
 
     **Example**:
 
-        .. doctest::
+    .. doctest::
 
-            >>> from binarytree import Node, get_parent_node
-            >>> root = Node(0)
-            >>> root.left = Node(1)
-            >>> root.right = Node(2)
-            >>> root.left.left = Node(3)
-            >>> print (root)
-            >>>     0
-                   / \
-                  1   2
-                 /
-                3
-            >>> print (get_parent_node(root, root.left.left))
-            >>>   1
-                 /
-                3
+        >>> from binarytree import Node, get_parent_node
+        >>> root = Node(0)
+        >>> root.left = Node(1)
+        >>> root.right = Node(2)
+        >>> root.left.left = Node(3)
+        >>> print (root)
+                0
+               / \\
+              1   2
+             /
+            3
+        >>> print (get_parent_node(root, root.left.left))
+              1
+             /
+            3
     """
     if node is None:
         return None
@@ -363,6 +363,60 @@ def get_parent_node(root, node):
         else:
             break
     return None
+
+
+def merge_trees(node1, node2):
+    """Merge arbitrary two binary trees.
+
+    :param node1: Root node of the binary tree 1.
+    :rtype: binarytree.Node
+    :param node2: Root node of the binary tree 2.
+    :rtype: binarytree.Node
+    :return: The merged binary tree.
+    :rtype: binarytree.Node
+
+    **Example**:
+
+    .. doctest::
+
+        >>> from binarytree import Node, merge_trees, tree
+        >>> tree1 = tree()
+        >>> print (tree1)
+                  _____14
+                 /       \\
+              __2         12
+             /   \\          \\
+            9     11         4
+             \\      \\
+              0      3
+        >>> tree2 = tree()
+        >>> print (tree2)
+              ______10___
+             /           \\
+            1__          _11
+               \\        /
+                6      14
+               / \\
+              7   4
+        >>> tree3 = merge_trees(tree1, tree2)
+        >>> print (tree3)
+                  _______24___
+                 /            \\
+              __3__           _23
+             /     \\         /   \\
+            9       17      14    4
+             \\     /  \\
+              0   7    7
+    """
+    if node1 is None:
+        return node2
+    elif node2 is None:
+        return node1
+    else:
+        node = Node(node1.value + node2.value)
+        node.left = merge_trees(node1.left, node2.left)
+        node.right = merge_trees(node1.right, node2.right)
+        return node
 
 
 class Node(object):
