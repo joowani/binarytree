@@ -11,7 +11,7 @@ algorithms. Heaps and BSTs (binary search trees) are also supported.
 Requirements
 ============
 
-- Python 2.7, 3.5, 3.6, 3.7, 3.8
+- Python 2.7+ or 3.4+
 
 Installation
 ============

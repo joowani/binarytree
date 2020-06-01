@@ -6,7 +6,7 @@ import random
 import pytest
 
 from binarytree import Node, build, tree, bst, heap
-from binarytree import get_parent_node
+from binarytree import get_parent
 from binarytree.exceptions import (
     NodeValueError,
     NodeIndexError,
@@ -887,18 +887,18 @@ def test_heap_float_values():
             assert root.size == root_copy.size
 
 
-@pytest.mark.order14
-def test_get_parent_node():
+def test_get_parent():
     root = Node(0)
     root.left = Node(1)
     root.right = Node(2)
     root.left.left = Node(3)
     root.right.right = Node(4)
-    assert get_parent_node(root, root.left.left) == root.left
-    assert get_parent_node(root, root.left) == root
-    assert get_parent_node(root, root) is None
-    assert get_parent_node(root, root.right.right) == root.right
-    assert get_parent_node(root, root.right) == root
-    assert get_parent_node(root, Node(5)) is None
-    assert get_parent_node(None, root.left) is None
-    assert get_parent_node(root, None) is None
+
+    assert get_parent(root, root.left.left) == root.left
+    assert get_parent(root, root.left) == root
+    assert get_parent(root, root) is None
+    assert get_parent(root, root.right.right) == root.right
+    assert get_parent(root, root.right) == root
+    assert get_parent(root, Node(5)) is None
+    assert get_parent(None, root.left) is None
+    assert get_parent(root, None) is None

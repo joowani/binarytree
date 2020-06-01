@@ -9,6 +9,7 @@ functions:
 * :func:`binarytree.tree`
 * :func:`binarytree.bst`
 * :func:`binarytree.heap`
+* :func:`binarytree.get_parent`
 
 Class: binarytree.Node
 ======================
@@ -38,3 +39,8 @@ Function: binarytree.heap
 =========================
 
 .. autofunction:: binarytree.heap
+
+Function: binarytree.get_parent
+===============================
+
+.. autofunction:: binarytree.get_parent

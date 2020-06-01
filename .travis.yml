@@ -9,7 +9,8 @@ matrix:
       dist: xenial
       sudo: true
 install:
-    - pip install flake8 mock
+    - pip install flake8
+    - pip install mock
     - pip install pytest==3.5.1
     - pip install pytest-cov==2.5.1
     - pip install python-coveralls==2.9.1

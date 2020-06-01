@@ -1,6 +1,6 @@
 from __future__ import absolute_import, unicode_literals, division
 
-__all__ = ['Node', 'tree', 'bst', 'heap', 'build']
+__all__ = ['Node', 'tree', 'bst', 'heap', 'build', 'get_parent']
 
 import heapq
 import random
@@ -26,7 +26,7 @@ def _is_balanced(root):
     """Return the tree height + 1 if balanced, -1 otherwise.
 
     :param root: Root node of the binary tree.
-    :type root: binarytree.Node | None
+    :type root: binarytree.Node
     :return: Height if the binary tree is balanced, -1 otherwise.
     :rtype: int
     """
@@ -45,7 +45,7 @@ def _is_bst(root, min_value=float('-inf'), max_value=float('inf')):
     """Check if the binary tree is a BST (binary search tree).
 
     :param root: Root node of the binary tree.
-    :type root: binarytree.Node | None
+    :type root: binarytree.Node
     :param min_value: Minimum node value seen.
     :type min_value: int | float
     :param max_value: Maximum node value seen.
@@ -66,7 +66,7 @@ def _is_symmetric(root):
     """Check if the binary tree is symmetric.
 
     :param root: Root node of the binary tree.
-    :type root: binarytree.Node | None
+    :type root: binarytree.Node
     :return: True if the binary tree is symmetric, False otherwise.
     :rtype: bool
     """
@@ -168,7 +168,7 @@ def _build_tree_string(root, curr_index, index=False, delimiter='-'):
     call then combines its left and right sub-boxes to build a larger box etc.
 
     :param root: Root node of the binary tree.
-    :type root: binarytree.Node | None
+    :type root: binarytree.Node
     :param curr_index: Level-order_ index of the current node (root node is 0).
     :type curr_index: int
     :param index: If set to True, include the level-order_ node indexes using
@@ -247,7 +247,7 @@ def _get_tree_properties(root):
     """Inspect the binary tree and return its properties (e.g. height).
 
     :param root: Root node of the binary tree.
-    :rtype: binarytree.Node
+    :type root: binarytree.Node
     :return: Binary tree properties.
     :rtype: dict
     """
@@ -321,54 +321,54 @@ def _get_tree_properties(root):
     }
 
 
-def get_parent_node(root, node):
-    """Search from the binary tree and return the parent node for require node.
+def get_parent(root, child):
+    """Search the binary tree and return the parent of given child.
 
     :param root: Root node of the binary tree.
+    :type: binarytree.Node
+    :param child: Child node.
     :rtype: binarytree.Node
-    :param node: Require node you want to get its parent node.
-    :rtype: binarytree.Node
-    :return: The parent node of require node.
+    :return: Parent node, or None if missing.
     :rtype: binarytree.Node
 
     **Example**:
 
-        .. doctest::
+    .. doctest::
 
-            >>> from binarytree import Node, get_parent_node
-            >>> root = Node(0)
-            >>> root.left = Node(1)
-            >>> root.right = Node(2)
-            >>> root.left.left = Node(3)
-            >>> print (root)
-            >>>     0
-                   / \
-                  1   2
-                 /
-                3
-            >>> print (get_parent_node(root, root.left.left))
-            >>>   1
-                 /
-                3
+        >>> from binarytree import Node, get_parent
+        >>>
+        >>> root = Node(1)
+        >>> root.left = Node(2)
+        >>> root.right = Node(3)
+        >>> root.left.right = Node(4)
+        >>>
+        >>> print(root)
+        <BLANKLINE>
+          __1
+         /   \\
+        2     3
+         \\
+          4
+        <BLANKLINE>
+        >>> print(get_parent(root, root.left.right))
+        <BLANKLINE>
+        2
+         \\
+          4
+        <BLANKLINE>
     """
-    if node is None:
+    if child is None:
         return None
-    node_stack = []
-    while True:
-        if root is not None:
-            node_stack.append(root)
-            if root.left is node:
-                return root
+
+    stack = [root]
+    while stack:
+        node = stack.pop()
+        if node:
+            if node.left is child or node.right is child:
+                return node
             else:
-                root = root.left
-        elif len(node_stack) > 0:
-            root = node_stack.pop()
-            if root.right is node:
-                return root
-            else:
-                root = root.right
-        else:
-            break
+                stack.append(node.left)
+                stack.append(node.right)
     return None
 
 
@@ -383,9 +383,9 @@ class Node(object):
     :param value: Node value (must be a number).
     :type value: int | float | numbers.Number
     :param left: Left child node (default: None).
-    :type left: binarytree.Node | None
+    :type left: binarytree.Node
     :param right: Right child node (default: None).
-    :type right: binarytree.Node | None
+    :type right: binarytree.Node
     :raise binarytree.exceptions.NodeTypeError: If left or right child node is
         not an instance of :class:`binarytree.Node`.
     :raise binarytree.exceptions.NodeValueError: If node value is not a number
