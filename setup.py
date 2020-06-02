@@ -21,7 +21,6 @@ setup(
     license='MIT',
     classifiers=[
         'Intended Audience :: Developers',
-        'Intended Audience :: End Users/Desktop',
         'Intended Audience :: Information Technology',
         'License :: OSI Approved :: MIT License',
         'Operating System :: POSIX',
