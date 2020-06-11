@@ -40,13 +40,6 @@ visualize, inspect and manipulate binary trees. It allows you to skip the
 tedious work of setting up test data, and dive straight into practising your
 algorithms. Heaps and BSTs (binary search trees) are also supported.
 
-Announcements
-=============
-
-* Please see the releases_ page for details on the latest updates.
-
-.. _releases: https://github.com/joowani/binarytree/releases
-
 Requirements
 ============
 

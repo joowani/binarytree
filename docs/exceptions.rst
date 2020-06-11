@@ -1,7 +1,7 @@
 Exceptions
 ----------
 
-The page lists the exceptions raised by **binarytree**:
+This page contains exceptions raised by **binarytree**:
 
 .. automodule:: binarytree.exceptions
     :members:
