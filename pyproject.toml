@@ -1,0 +1,21 @@
+[build-system]
+requires = [
+    "setuptools>=42",
+    "wheel",
+    "setuptools_scm[toml]>=3.4"
+]
+build-backend = "setuptools.build_meta"
+
+[tool.coverage.run]
+omit = ["binarytree/version.py"]
+
+[tool.isort]
+profile = "black"
+
+[tool.pytest.ini_options]
+addopts = "-s -vv -p no:warnings"
+minversion = "6.0"
+testpaths = ["tests"]
+
+[tool.setuptools_scm]
+write_to = "binarytree/version.py"

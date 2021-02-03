@@ -1,6 +1,3 @@
-from __future__ import absolute_import, unicode_literals
-
-
 class BinaryTreeError(Exception):
     """Base (catch-all) binarytree exception."""
 

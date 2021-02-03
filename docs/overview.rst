@@ -1,14 +1,14 @@
 Overview
 --------
 
-By default, **binarytree** uses the following class to represent a node:
+Binarytree uses the following class to represent a node:
 
 .. testcode::
 
-    class Node(object):
+    class Node:
 
         def __init__(self, value, left=None, right=None):
-            self.val = value    # The node value
+            self.value = value  # The node value (integer)
             self.left = left    # Left child
             self.right = right  # Right child
 
@@ -59,7 +59,7 @@ Generate and pretty-print various types of binary trees:
     0    10    6
 
 
-Use the :class:`binarytree.Node` class to build your own trees:
+Build your own trees:
 
 .. doctest::
 
@@ -203,7 +203,7 @@ Use `level-order (breadth-first)`_ indexes to manipulate nodes:
         2-3
     <BLANKLINE>
 
-Traverse the trees using different algorithms:
+Traverse trees using different algorithms:
 
 .. doctest::
 

@@ -87,4 +87,9 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# PyCharm
 .idea/
+
+# setuptools-scm
+binarytree/version.py

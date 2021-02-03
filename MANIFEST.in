@@ -1,2 +1,3 @@
-include README.rst LICENSE
+include README.md LICENSE
 prune tests
+recursive-include gifs

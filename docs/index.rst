@@ -3,36 +3,33 @@ Binarytree
 
 Welcome to the documentation for **binarytree**!
 
-**Binarytree** is a Python library which provides a simple API to generate,
-visualize, inspect and manipulate binary trees. It allows you to skip the
-tedious work of setting up test data, and dive straight into practising your
-algorithms. Heaps and BSTs (binary search trees) are also supported.
+**Binarytree** is Python library which lets you generate, visualize, inspect and
+manipulate binary trees. Skip the tedious work of setting up test data, and dive
+straight into practising algorithms! Heaps and BSTs (binary search trees) are also
+supported.
 
 Requirements
 ============
 
-- Python 2.7+ or 3.4+
+Python 3.6+
 
 Installation
 ============
 
-To install a stable version from PyPi_:
+Install via pip_:
 
 .. code-block:: bash
 
-    ~$ pip install binarytree
+    pip install binarytree
 
-
-To install the latest version directly from GitHub_:
+For conda_ users:
 
 .. code-block:: bash
 
-    ~$ pip install -e git+git@github.com:joowani/binarytree.git@master#egg=binarytree
+    conda install binarytree -c conda-forge
 
-You may need to use ``sudo`` depending on your environment.
-
-.. _PyPi: https://pypi.python.org/pypi/binarytree
-.. _GitHub: https://github.com/joowani/binarytree
+.. _pip: https://pip.pypa.io
+.. _conda: https://docs.conda.io
 
 Contents
 ========
@@ -43,4 +40,4 @@ Contents
     overview
     specs
     exceptions
-    contributing
+    graphviz

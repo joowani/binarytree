@@ -1,6 +1,7 @@
 from __future__ import absolute_import, unicode_literals
 
 import sys
+
 try:
     # noinspection PyCompatibility
     from StringIO import StringIO
@@ -29,18 +30,18 @@ def pprint_default(values):
     """Helper function for testing Node.pprint with default arguments."""
     root = build(values)
     with CaptureOutput() as output:
-        root.pprint(index=False, delimiter='-')
-    assert output[0] == '' and output[-1] == ''
-    return [line for line in output if line != '']
+        root.pprint(index=False, delimiter="-")
+    assert output[0] == "" and output[-1] == ""
+    return [line for line in output if line != ""]
 
 
 def pprint_with_index(values):
     """Helper function for testing Node.pprint with indexes."""
     root = build(values)
     with CaptureOutput() as output:
-        root.pprint(index=True, delimiter=':')
-    assert output[0] == '' and output[-1] == ''
-    return [line for line in output if line != '']
+        root.pprint(index=True, delimiter=":")
+    assert output[0] == "" and output[-1] == ""
+    return [line for line in output if line != ""]
 
 
 def builtin_print(values):
@@ -48,5 +49,5 @@ def builtin_print(values):
     root = build(values)
     with CaptureOutput() as output:
         print(root)
-    assert output[0] == '' and output[-1] == ''
-    return [line for line in output if line != '']
+    assert output[0] == "" and output[-1] == ""
+    return [line for line in output if line != ""]
