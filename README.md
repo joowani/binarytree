@@ -2,14 +2,14 @@
 
 ![Build](https://github.com/joowani/binarytree/workflows/Build/badge.svg)
 ![CodeQL](https://github.com/joowani/binarytree/workflows/CodeQL/badge.svg)
-[![codecov](https://codecov.io/gh/joowani/binarytree/branch/master/graph/badge.svg?token=B6sFAVxxsk)](https://codecov.io/gh/joowani/binarytree)
+[![codecov](https://codecov.io/gh/joowani/binarytree/branch/main/graph/badge.svg?token=B6sFAVxxsk)](https://codecov.io/gh/joowani/binarytree)
 [![PyPI version](https://badge.fury.io/py/binarytree.svg)](https://badge.fury.io/py/binarytree)
 [![GitHub license](https://img.shields.io/github/license/joowani/binarytree?color=brightgreen)](https://github.com/joowani/binarytree/blob/main/LICENSE)
 ![Python version](https://img.shields.io/badge/python-3.6%2B-blue)
 
 Are you studying binary trees for your next exam, assignment or technical interview?
 
-**Binarytree** is Python library which lets you generate, visualize, inspect and 
+**Binarytree** is a Python library which lets you generate, visualize, inspect and 
 manipulate binary trees. Skip the tedious work of setting up test data, and dive 
 straight into practising your algorithms! Heaps and BSTs (binary search trees) are 
 also supported.
@@ -270,8 +270,7 @@ print(list(root)) # Equivalent to root.levelorder
 # [Node(1), Node(2), Node(3), Node(4), Node(5)]
 ```
 
-[List representations](https://en.wikipedia.org/wiki/Binary_tree#Arrays) are also 
-supported:
+Convert to [list representations](https://en.wikipedia.org/wiki/Binary_tree#Arrays):
 
 ```python
 from binarytree import build
