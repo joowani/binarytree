@@ -43,7 +43,7 @@ With Graphviz you can also visualize binary trees in `Jupyter notebooks`_:
     :alt: Jupyter Notebook GIF
 
 .. _DOT: https://graphviz.org/doc/info/lang.html
-.. _Graphviz: https://graphviz.org/
-.. _python-graphviz: https://github.com/xflr6/graphviz
+.. _Graphviz: https://graphviz.org
+.. _python-graphviz: https://pypi.org/project/graphviz
 .. _graphviz.Digraph: https://graphviz.readthedocs.io/en/stable/api.html#digraph
-.. _Jupyter notebooks: https://jupyter.org/
+.. _Jupyter notebooks: https://jupyter.org
