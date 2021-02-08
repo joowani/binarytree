@@ -1,13 +1,16 @@
 [build-system]
 requires = [
     "setuptools>=42",
+    "setuptools_scm[toml]>=3.4",
     "wheel",
-    "setuptools_scm[toml]>=3.4"
 ]
 build-backend = "setuptools.build_meta"
 
 [tool.coverage.run]
-omit = ["binarytree/version.py"]
+omit = [
+    "binarytree/version.py",
+    "setup.py"
+]
 
 [tool.isort]
 profile = "black"

@@ -295,20 +295,3 @@ print(root.values)
 ```
 
 Check out the [documentation](http://binarytree.readthedocs.io) for more details.
-
-Contributing
-============
-
-Set up dev environment:
-
-```shell
-cd ~/your/binarytree/clone  # Activate venv if you have one (recommended)
-pip install -e .[dev]       # Install dev dependencies (black, mypy, pre-commit etc.)
-pre-commit install          # Install git pre-commit hooks
-```
-
-Run unit tests with coverage:
-
-```shell
-py.test --cov=binarytree --cov-report=html
-```

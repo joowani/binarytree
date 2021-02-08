@@ -11,6 +11,7 @@ setup(
     author="Joohwan Oh",
     author_email="joohwan.oh@outlook.com",
     url="https://github.com/joowani/binarytree",
+    keywords=["tree", "heap", "bst", "education"],
     packages=find_packages(exclude=["tests"]),
     include_package_data=True,
     python_requires=">=3.6",
@@ -25,10 +26,10 @@ setup(
     extras_require={
         "dev": [
             "black",
-            "flake8",
+            "flake8>=3.8.4",
             "isort>=5.0.0",
-            "mypy",
-            "pre-commit",
+            "mypy>=0.790",
+            "pre-commit>=2.9.3",
             "pytest>=6.0.0",
             "pytest-cov>=2.0.0",
             "sphinx",
@@ -38,12 +39,12 @@ setup(
     classifiers=[
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
-        "Operating System :: POSIX",
+        "Natural Language :: English",
         "Operating System :: MacOS",
-        "Operating System :: Unix",
         "Operating System :: Microsoft :: Windows",
-        "Programming Language :: Python",
+        "Operating System :: Unix",
         "Programming Language :: Python :: 3",
+        "Topic :: Documentation :: Sphinx",
         "Topic :: Education",
     ],
 )
