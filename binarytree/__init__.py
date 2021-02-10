@@ -2,6 +2,7 @@ __all__ = ["Node", "tree", "bst", "heap", "build", "get_parent", "__version__"]
 
 import heapq
 import random
+from dataclasses import dataclass
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from graphviz import Digraph, nohtml
@@ -25,7 +26,22 @@ VAL_FIELD = "val"
 VALUE_FIELD = "value"
 
 NodeValue = Union[float, int]
-NodeProperty = Union[float, int, bool]
+
+
+@dataclass
+class NodeProperties:
+    height: int
+    size: int
+    is_max_heap: bool
+    is_min_heap: bool
+    is_perfect: bool
+    is_strict: bool
+    is_complete: bool
+    leaf_count: int
+    min_node_value: NodeValue
+    max_node_value: NodeValue
+    min_leaf_depth: int
+    max_leaf_depth: int
 
 
 class Node:
@@ -39,13 +55,12 @@ class Node:
     :param value: Node value (must be a number).
     :type value: int | float
     :param left: Left child node (default: None).
-    :type left: binarytree.Node
+    :type left: binarytree.Node | None
     :param right: Right child node (default: None).
-    :type right: binarytree.Node
+    :type right: binarytree.Node | None
     :raise binarytree.exceptions.NodeTypeError: If left or right child node is
         not an instance of :class:`binarytree.Node`.
-    :raise binarytree.exceptions.NodeValueError: If node value is not a number
-        (e.g. int, float).
+    :raise binarytree.exceptions.NodeValueError: If node value is not an int or float.
     """
 
     def __init__(
@@ -180,7 +195,7 @@ class Node:
             https://en.wikipedia.org/wiki/Tree_traversal#Breadth-first_search
 
         :return: Node iterator.
-        :rtype: (binarytree.Node)
+        :rtype: Iterator[binarytree.Node]
 
         **Example**:
 
@@ -239,7 +254,7 @@ class Node:
         .. note::
             This method is equivalent to :attr:`binarytree.Node.size`.
         """
-        return self.properties["size"]
+        return sum(1 for _ in iter(self))
 
     def __getitem__(self, index: int) -> "Node":
         """Return the node (or subtree) at the given level-order_ index.
@@ -449,7 +464,7 @@ class Node:
         .. _Jupyter notebooks: https://jupyter.org
         """
         # noinspection PyProtectedMember
-        return self.graphviz()._repr_svg_()
+        return str(self.graphviz()._repr_svg_())
 
     def graphviz(self, *args: Any, **kwargs: Any) -> Digraph:
         """Return a graphviz.Digraph_ object representing the binary tree.
@@ -795,7 +810,7 @@ class Node:
         .. note::
             A binary tree with only a root node has a height of 0.
         """
-        return _get_tree_properties(self)["height"]
+        return _get_tree_properties(self).height
 
     @property
     def size(self) -> int:
@@ -821,7 +836,7 @@ class Node:
         .. note::
             This method is equivalent to :func:`binarytree.Node.__len__`.
         """
-        return _get_tree_properties(self)["size"]
+        return self.__len__()
 
     @property
     def leaf_count(self) -> int:
@@ -846,7 +861,7 @@ class Node:
             >>> root.leaf_count
             2
         """
-        return _get_tree_properties(self)["leaf_count"]
+        return _get_tree_properties(self).leaf_count
 
     @property
     def is_balanced(self) -> bool:
@@ -982,7 +997,7 @@ class Node:
             >>> root.is_max_heap
             True
         """
-        return _get_tree_properties(self)["is_max_heap"]
+        return _get_tree_properties(self).is_max_heap
 
     @property
     def is_min_heap(self) -> bool:
@@ -1012,7 +1027,7 @@ class Node:
             >>> root.is_min_heap
             True
         """
-        return _get_tree_properties(self)["is_min_heap"]
+        return _get_tree_properties(self).is_min_heap
 
     @property
     def is_perfect(self) -> bool:
@@ -1049,7 +1064,7 @@ class Node:
             >>> root.is_perfect
             True
         """
-        return _get_tree_properties(self)["is_perfect"]
+        return _get_tree_properties(self).is_perfect
 
     @property
     def is_strict(self) -> bool:
@@ -1084,7 +1099,7 @@ class Node:
             >>> root.is_strict
             True
         """
-        return _get_tree_properties(self)["is_strict"]
+        return _get_tree_properties(self).is_strict
 
     @property
     def is_complete(self) -> bool:
@@ -1121,7 +1136,7 @@ class Node:
             >>> root.is_complete
             True
         """
-        return _get_tree_properties(self)["is_complete"]
+        return _get_tree_properties(self).is_complete
 
     @property
     def min_node_value(self) -> NodeValue:
@@ -1143,7 +1158,7 @@ class Node:
             >>> root.min_node_value
             1
         """
-        return _get_tree_properties(self)["min_node_value"]
+        return _get_tree_properties(self).min_node_value
 
     @property
     def max_node_value(self) -> NodeValue:
@@ -1165,7 +1180,7 @@ class Node:
             >>> root.max_node_value
             3
         """
-        return _get_tree_properties(self)["max_node_value"]
+        return _get_tree_properties(self).max_node_value
 
     @property
     def max_leaf_depth(self) -> int:
@@ -1199,7 +1214,7 @@ class Node:
             >>> root.max_leaf_depth
             3
         """
-        return _get_tree_properties(self)["max_leaf_depth"]
+        return _get_tree_properties(self).max_leaf_depth
 
     @property
     def min_leaf_depth(self) -> int:
@@ -1233,7 +1248,7 @@ class Node:
             >>> root.min_leaf_depth
             1
         """
-        return _get_tree_properties(self)["min_leaf_depth"]
+        return _get_tree_properties(self).min_leaf_depth
 
     @property
     def properties(self) -> Dict[str, Any]:
@@ -1286,14 +1301,10 @@ class Node:
             >>> props['is_strict']      # equivalent to root.is_strict
             True
         """
-        properties = _get_tree_properties(self)
-        properties.update(
-            {
-                "is_bst": _is_bst(self),
-                "is_balanced": _is_balanced(self) >= 0,
-                "is_symmetric": _is_symmetric(self),
-            }
-        )
+        properties = _get_tree_properties(self).__dict__.copy()
+        properties["is_balanced"] = _is_balanced(self) >= 0
+        properties["is_bst"] = _is_bst(self)
+        properties["is_symmetric"] = _is_symmetric(self)
         return properties
 
     @property
@@ -1492,7 +1503,7 @@ def _is_balanced(root: Optional[Node]) -> int:
     """Return the tree height + 1 if balanced, -1 otherwise.
 
     :param root: Root node of the binary tree.
-    :type root: binarytree.Node
+    :type root: binarytree.Node | None
     :return: Height if the binary tree is balanced, -1 otherwise.
     :rtype: int
     """
@@ -1511,7 +1522,7 @@ def _is_bst(root: Optional[Node]) -> bool:
     """Check if the binary tree is a BST (binary search tree).
 
     :param root: Root node of the binary tree.
-    :type root: binarytree.Node
+    :type root: binarytree.Node | None
     :return: True if the binary tree is a BST, False otherwise.
     :rtype: bool
     """
@@ -1536,26 +1547,26 @@ def _is_symmetric(root: Optional[Node]) -> bool:
     """Check if the binary tree is symmetric.
 
     :param root: Root node of the binary tree.
-    :type root: binarytree.Node
+    :type root: binarytree.Node | None
     :return: True if the binary tree is symmetric, False otherwise.
     :rtype: bool
     """
 
-    def symmetric_helper(left_subtree, right_subtree):
-        if left_subtree is None and right_subtree is None:
+    def symmetric_helper(left: Optional[Node], right: Optional[Node]) -> bool:
+        if left is None and right is None:
             return True
-        if left_subtree is None or right_subtree is None:
+        if left is None or right is None:
             return False
         return (
-            left_subtree.val == right_subtree.val
-            and symmetric_helper(left_subtree.left, right_subtree.right)
-            and symmetric_helper(left_subtree.right, right_subtree.left)
+            left.val == right.val
+            and symmetric_helper(left.left, right.right)
+            and symmetric_helper(left.right, right.left)
         )
 
     return symmetric_helper(root, root)
 
 
-def _validate_tree_height(height: int):
+def _validate_tree_height(height: int) -> None:
     """Check if the height of the binary tree is valid.
 
     :param height: Height of the binary tree (must be 0 - 9 inclusive).
@@ -1640,7 +1651,7 @@ def _build_tree_string(
     call then combines its left and right sub-boxes to build a larger box etc.
 
     :param root: Root node of the binary tree.
-    :type root: binarytree.Node
+    :type root: binarytree.Node | None
     :param curr_index: Level-order_ index of the current node (root node is 0).
     :type curr_index: int
     :param index: If set to True, include the level-order_ node indexes using
@@ -1717,13 +1728,13 @@ def _build_tree_string(
     return new_box, len(new_box[0]), new_root_start, new_root_end
 
 
-def _get_tree_properties(root: Node) -> Dict[str, Any]:
+def _get_tree_properties(root: Node) -> NodeProperties:
     """Inspect the binary tree and return its properties (e.g. height).
 
     :param root: Root node of the binary tree.
     :type root: binarytree.Node
     :return: Binary tree properties.
-    :rtype: dict
+    :rtype: binarytree.NodeProperties
     """
     is_descending = True
     is_ascending = True
@@ -1779,20 +1790,20 @@ def _get_tree_properties(root: Node) -> Dict[str, Any]:
 
         current_level = next_level
 
-    return {
-        "height": max_leaf_depth,
-        "size": size,
-        "is_max_heap": is_complete and is_descending,
-        "is_min_heap": is_complete and is_ascending,
-        "is_perfect": leaf_count == 2 ** max_leaf_depth,
-        "is_strict": is_strict,
-        "is_complete": is_complete,
-        "leaf_count": leaf_count,
-        "min_node_value": min_node_value,
-        "max_node_value": max_node_value,
-        "min_leaf_depth": min_leaf_depth,
-        "max_leaf_depth": max_leaf_depth,
-    }
+    return NodeProperties(
+        height=max_leaf_depth,
+        size=size,
+        is_max_heap=is_complete and is_descending,
+        is_min_heap=is_complete and is_ascending,
+        is_perfect=leaf_count == 2 ** max_leaf_depth,
+        is_strict=is_strict,
+        is_complete=is_complete,
+        leaf_count=leaf_count,
+        min_node_value=min_node_value,
+        max_node_value=max_node_value,
+        min_leaf_depth=min_leaf_depth,
+        max_leaf_depth=max_leaf_depth,
+    )
 
 
 def get_parent(root: Node, child: Node) -> Optional[Node]:
@@ -1847,7 +1858,7 @@ def get_parent(root: Node, child: Node) -> Optional[Node]:
     return None
 
 
-def build(values: List) -> Optional[Node]:
+def build(values: List[int]) -> Optional[Node]:
     """Build a tree from `list representation`_ and return its root node.
 
     .. _list representation:
