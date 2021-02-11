@@ -5,10 +5,10 @@ import random
 from dataclasses import dataclass
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
-from graphviz import Digraph, nohtml
 from pkg_resources import get_distribution
 
 from binarytree.exceptions import (
+    GraphvizImportError,
     NodeIndexError,
     NodeModifyError,
     NodeNotFoundError,
@@ -17,6 +17,15 @@ from binarytree.exceptions import (
     NodeValueError,
     TreeHeightError,
 )
+
+try:
+    from graphviz import Digraph, nohtml
+
+    GRAPHVIZ_INSTALLED = True
+except ImportError:
+    GRAPHVIZ_INSTALLED = False
+    Digraph = Any
+    from binarytree.layout import generate_svg
 
 __version__ = get_distribution("binarytree").version
 
@@ -463,19 +472,19 @@ class Node:
 
         .. _Jupyter notebooks: https://jupyter.org
         """
-        # noinspection PyProtectedMember
-        return str(self.graphviz()._repr_svg_())
+        if GRAPHVIZ_INSTALLED:
+            # noinspection PyProtectedMember
+            return str(self.graphviz()._repr_svg_())
+        else:
+            return generate_svg(self.values)  # pragma: no cover
 
     def graphviz(self, *args: Any, **kwargs: Any) -> Digraph:
         """Return a graphviz.Digraph_ object representing the binary tree.
-
         This method's positional and keyword arguments are passed directly into the
         the Digraph's **__init__** method.
-
         :return: graphviz.Digraph_ object representing the binary tree.
-
+        :raise binarytree.exceptions.GraphvizImportError: If graphviz is not installed
         .. code-block:: python
-
             >>> from binarytree import tree
             >>>
             >>> t = tree()
@@ -483,9 +492,12 @@ class Node:
             >>> graph = t.graphviz()    # Generate a graphviz object
             >>> graph.body              # Get the DOT body
             >>> graph.render()          # Render the graph
-
         .. _graphviz.Digraph: https://graphviz.readthedocs.io/en/stable/api.html#digraph
         """
+        if not GRAPHVIZ_INSTALLED:
+            raise GraphvizImportError(
+                "Can't use graphviz method if graphviz module is not installed"
+            )
         if "node_attr" not in kwargs:
             kwargs["node_attr"] = {
                 "shape": "record",
@@ -494,20 +506,14 @@ class Node:
                 "fillcolor": "lightgray",
                 "fontcolor": "black",
             }
-
         digraph = Digraph(*args, **kwargs)
-
         for node in self:
             node_id = str(id(node))
-
             digraph.node(node_id, nohtml(f"<l>|<v> {node.value}|<r>"))
-
             if node.left is not None:
                 digraph.edge(f"{node_id}:l", f"{id(node.left)}:v")
-
             if node.right is not None:
                 digraph.edge(f"{node_id}:r", f"{id(node.right)}:v")
-
         return digraph
 
     def pprint(self, index: bool = False, delimiter: str = "-") -> None:

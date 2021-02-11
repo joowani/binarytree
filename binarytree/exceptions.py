@@ -28,3 +28,7 @@ class NodeValueError(BinaryTreeError):
 
 class TreeHeightError(BinaryTreeError):
     """Tree height was invalid."""
+
+
+class GraphvizImportError(BinaryTreeError):
+    """graphviz module is not installed"""
