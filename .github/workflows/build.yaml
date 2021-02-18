@@ -35,7 +35,7 @@ jobs:
       - name: Run mypy
         run: mypy binarytree
       - name: Run pytest
-        run: py.test --cov=./ --cov-report=xml
+        run: py.test --cov=binarytree --cov-report=xml
       - name: Run Sphinx doctest
         run: python -m sphinx -b doctest docs docs/_build
       - name: Run Sphinx HTML

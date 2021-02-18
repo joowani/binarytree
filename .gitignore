@@ -93,3 +93,6 @@ ENV/
 
 # setuptools-scm
 binarytree/version.py
+
+# Jupyter Notebook
+*.ipynb

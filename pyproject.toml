@@ -7,10 +7,7 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [tool.coverage.run]
-omit = [
-    "binarytree/version.py",
-    "setup.py"
-]
+omit = ["binarytree/version.py"]
 
 [tool.isort]
 profile = "black"

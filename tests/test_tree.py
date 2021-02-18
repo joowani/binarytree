@@ -19,7 +19,62 @@ from tests.utils import builtin_print, pprint_default, pprint_with_index
 
 REPETITIONS = 20
 
+EXPECTED_SVG_XML_SINGLE_NODE = """
+<svg width="48" height="96" xmlns="http://www.w3.org/2000/svg">
+<style>
+    .value {
+        font: 300 16px sans-serif;
+        text-align: center;
+        dominant-baseline: middle;
+        text-anchor: middle;
+    }
+    .node {
+        fill: lightgray;
+        stroke-width: 1;
+    }
+</style>
+<g stroke="#000000">
+<circle class="node" cx="17.0" cy="48" r="16"/>
+<text class="value" x="17.0" y="48">0</text>
+</g>
+</svg>
+"""
 
+EXPECTED_SVG_XML_MULTIPLE_NODES = """
+<svg width="192" height="192" xmlns="http://www.w3.org/2000/svg">
+<style>
+    .value {
+        font: 300 16px sans-serif;
+        text-align: center;
+        dominant-baseline: middle;
+        text-anchor: middle;
+    }
+    .node {
+        fill: lightgray;
+        stroke-width: 1;
+    }
+</style>
+<g stroke="#000000">
+<line x1="137.0" y1="96" x2="161.0" y2="144"/>
+<line x1="41.0" y1="96" x2="17.0" y2="144"/>
+<line x1="89.0" y1="48" x2="137.0" y2="96"/>
+<line x1="89.0" y1="48" x2="41.0" y2="96"/>
+<circle class="node" cx="89.0" cy="48" r="16"/>
+<text class="value" x="89.0" y="48">0</text>
+<circle class="node" cx="41.0" cy="96" r="16"/>
+<text class="value" x="41.0" y="96">1</text>
+<circle class="node" cx="137.0" cy="96" r="16"/>
+<text class="value" x="137.0" y="96">2</text>
+<circle class="node" cx="17.0" cy="144" r="16"/>
+<text class="value" x="17.0" y="144">3</text>
+<circle class="node" cx="161.0" cy="144" r="16"/>
+<text class="value" x="161.0" y="144">4</text>
+</g>
+</svg>
+"""
+
+
+# noinspection PyTypeChecker
 def test_node_set_attributes():
     root = Node(1)
     assert root.left is None
@@ -869,6 +924,7 @@ def test_heap_float_values():
             assert root.size == root_copy.size
 
 
+# noinspection PyTypeChecker
 def test_get_parent():
     root = Node(0)
     root.left = Node(1)
@@ -884,3 +940,14 @@ def test_get_parent():
     assert get_parent(root, Node(5)) is None
     assert get_parent(None, root.left) is None
     assert get_parent(root, None) is None
+
+
+def test_svg_generation():
+    root = Node(0)
+    assert root.svg() == EXPECTED_SVG_XML_SINGLE_NODE
+
+    root.left = Node(1)
+    root.right = Node(2)
+    root.left.left = Node(3)
+    root.right.right = Node(4)
+    assert root.svg() == EXPECTED_SVG_XML_MULTIPLE_NODES

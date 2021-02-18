@@ -2,13 +2,15 @@ __all__ = ["Node", "tree", "bst", "heap", "build", "get_parent", "__version__"]
 
 import heapq
 import random
+from collections import deque
 from dataclasses import dataclass
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
+from subprocess import SubprocessError
+from typing import Any, Deque, Dict, Iterator, List, Optional, Tuple, Union
 
+from graphviz import Digraph, ExecutableNotFound, nohtml
 from pkg_resources import get_distribution
 
 from binarytree.exceptions import (
-    GraphvizImportError,
     NodeIndexError,
     NodeModifyError,
     NodeNotFoundError,
@@ -18,21 +20,31 @@ from binarytree.exceptions import (
     TreeHeightError,
 )
 
-try:
-    from graphviz import Digraph, nohtml
-
-    GRAPHVIZ_INSTALLED = True
-except ImportError:
-    GRAPHVIZ_INSTALLED = False
-    Digraph = Any
-    from binarytree.layout import generate_svg
-
 __version__ = get_distribution("binarytree").version
 
-LEFT_FIELD = "left"
-RIGHT_FIELD = "right"
-VAL_FIELD = "val"
-VALUE_FIELD = "value"
+_ATTR_LEFT = "left"
+_ATTR_RIGHT = "right"
+_ATTR_VAL = "val"
+_ATTR_VALUE = "value"
+_SVG_XML_TEMPLATE = """
+<svg width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg">
+<style>
+    .value {{
+        font: 300 16px sans-serif;
+        text-align: center;
+        dominant-baseline: middle;
+        text-anchor: middle;
+    }}
+    .node {{
+        fill: lightgray;
+        stroke-width: 1;
+    }}
+</style>
+<g stroke="#000000">
+{body}
+</g>
+</svg>
+"""
 
 NodeValue = Union[float, int]
 
@@ -81,15 +93,6 @@ class Node:
         self.value = self.val = value
         self.left = left
         self.right = right
-
-        if not isinstance(value, (float, int)):
-            raise NodeValueError("node value must be a float or int")
-
-        if left is not None and not isinstance(left, Node):
-            raise NodeTypeError("left child must be a Node instance")
-
-        if right is not None and not isinstance(right, Node):
-            raise NodeTypeError("right child must be a Node instance")
 
     def __repr__(self) -> str:
         """Return the string representation of the current node.
@@ -180,20 +183,23 @@ class Node:
              ...
             NodeValueError: node value must be a float or int
         """
-        if attr == LEFT_FIELD:
+        if attr == _ATTR_LEFT:
             if obj is not None and not isinstance(obj, Node):
                 raise NodeTypeError("left child must be a Node instance")
-        elif attr == RIGHT_FIELD:
+
+        elif attr == _ATTR_RIGHT:
             if obj is not None and not isinstance(obj, Node):
                 raise NodeTypeError("right child must be a Node instance")
-        elif attr == VALUE_FIELD:
+
+        elif attr == _ATTR_VALUE:
             if not isinstance(obj, (float, int)):
                 raise NodeValueError("node value must be a float or int")
-            object.__setattr__(self, VAL_FIELD, obj)
-        elif attr == VAL_FIELD:
+            object.__setattr__(self, _ATTR_VAL, obj)
+
+        elif attr == _ATTR_VAL:
             if not isinstance(obj, (float, int)):
                 raise NodeValueError("node value must be a float or int")
-            object.__setattr__(self, VALUE_FIELD, obj)
+            object.__setattr__(self, _ATTR_VALUE, obj)
 
         object.__setattr__(self, attr, obj)
 
@@ -229,17 +235,20 @@ class Node:
             >>> list(root)
             [Node(1), Node(2), Node(3), Node(4), Node(5)]
         """
-        current_level = [self]
+        current_nodes = [self]
 
-        while len(current_level) > 0:
-            next_level = []
-            for node in current_level:
+        while len(current_nodes) > 0:
+            next_nodes = []
+
+            for node in current_nodes:
                 yield node
+
                 if node.left is not None:
-                    next_level.append(node.left)
+                    next_nodes.append(node.left)
                 if node.right is not None:
-                    next_level.append(node.right)
-            current_level = next_level
+                    next_nodes.append(node.right)
+
+            current_nodes = next_nodes
 
     def __len__(self) -> int:
         """Return the total number of nodes in the binary tree.
@@ -302,15 +311,15 @@ class Node:
         if not isinstance(index, int) or index < 0:
             raise NodeIndexError("node index must be a non-negative int")
 
-        current_level: List[Optional[Node]] = [self]
+        current_nodes: List[Optional[Node]] = [self]
         current_index = 0
         has_more_nodes = True
 
         while has_more_nodes:
             has_more_nodes = False
-            next_level: List[Optional[Node]] = []
+            next_nodes: List[Optional[Node]] = []
 
-            for node in current_level:
+            for node in current_nodes:
                 if current_index == index:
                     if node is None:
                         break
@@ -319,15 +328,15 @@ class Node:
                 current_index += 1
 
                 if node is None:
-                    next_level.append(None)
-                    next_level.append(None)
+                    next_nodes.append(None)
+                    next_nodes.append(None)
                     continue
-                next_level.append(node.left)
-                next_level.append(node.right)
+                next_nodes.append(node.left)
+                next_nodes.append(node.right)
                 if node.left is not None or node.right is not None:
                     has_more_nodes = True
 
-            current_level = next_level
+            current_nodes = next_nodes
 
         raise NodeNotFoundError("node missing at index {}".format(index))
 
@@ -403,7 +412,7 @@ class Node:
                 "parent node missing at index {}".format(parent_index)
             )
 
-        setattr(parent, LEFT_FIELD if index % 2 else RIGHT_FIELD, node)
+        setattr(parent, _ATTR_LEFT if index % 2 else _ATTR_RIGHT, node)
 
     def __delitem__(self, index: int) -> None:
         """Remove the node (or subtree) at the given level-order_ index.
@@ -461,29 +470,102 @@ class Node:
         except NodeNotFoundError:
             raise NodeNotFoundError("no node to delete at index {}".format(index))
 
-        child_attr = LEFT_FIELD if index % 2 == 1 else RIGHT_FIELD
+        child_attr = _ATTR_LEFT if index % 2 == 1 else _ATTR_RIGHT
         if getattr(parent, child_attr) is None:
             raise NodeNotFoundError("no node to delete at index {}".format(index))
 
         setattr(parent, child_attr, None)
 
-    def _repr_svg_(self) -> str:
+    def _repr_svg_(self) -> str:  # pragma: no cover
         """Display the binary tree using Graphviz (used for `Jupyter notebooks`_).
 
         .. _Jupyter notebooks: https://jupyter.org
         """
-        if GRAPHVIZ_INSTALLED:
+        try:
             # noinspection PyProtectedMember
             return str(self.graphviz()._repr_svg_())
-        else:
-            return generate_svg(self.values)  # pragma: no cover
 
-    def graphviz(self, *args: Any, **kwargs: Any) -> Digraph:
+        except (SubprocessError, ExecutableNotFound, FileNotFoundError):
+            return self.svg()
+
+    def svg(self, node_radius: int = 16) -> str:
+        """Generate SVG XML.
+
+        :param node_radius: Node radius in pixels (default: 16).
+        :type node_radius: int
+        :return: Raw SVG XML.
+        :rtype: str
+        """
+        tree_height = self.height
+        scale = node_radius * 3
+        xml: Deque[str] = deque()
+
+        def scale_x(x: int, y: int) -> float:
+            diff = tree_height - y
+            x = 2 ** (diff + 1) * x + 2 ** diff - 1
+            return 1 + node_radius + scale * x / 2
+
+        def scale_y(y: int) -> float:
+            return scale * (1 + y)
+
+        def add_edge(parent_x: int, parent_y: int, node_x: int, node_y: int) -> None:
+            xml.appendleft(
+                '<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}"/>'.format(
+                    x1=scale_x(parent_x, parent_y),
+                    y1=scale_y(parent_y),
+                    x2=scale_x(node_x, node_y),
+                    y2=scale_y(node_y),
+                )
+            )
+
+        def add_node(node_x: int, node_y: int, node_value: NodeValue) -> None:
+            x, y = scale_x(node_x, node_y), scale_y(node_y)
+            xml.append(f'<circle class="node" cx="{x}" cy="{y}" r="{node_radius}"/>')
+            xml.append(f'<text class="value" x="{x}" y="{y}">{node_value}</text>')
+
+        current_nodes = [self.left, self.right]
+        has_more_nodes = True
+        y = 1
+
+        add_node(0, 0, self.value)
+
+        while has_more_nodes:
+
+            has_more_nodes = False
+            next_nodes: List[Optional[Node]] = []
+
+            for x, node in enumerate(current_nodes):
+                if node is None:
+                    next_nodes.append(None)
+                    next_nodes.append(None)
+                else:
+                    if node.left is not None or node.right is not None:
+                        has_more_nodes = True
+
+                    add_edge(x // 2, y - 1, x, y)
+                    add_node(x, y, node.value)
+
+                    next_nodes.append(node.left)
+                    next_nodes.append(node.right)
+
+            current_nodes = next_nodes
+            y += 1
+
+        return _SVG_XML_TEMPLATE.format(
+            width=scale * (2 ** tree_height),
+            height=scale * (2 + tree_height),
+            body="\n".join(xml),
+        )
+
+    def graphviz(self, *args: Any, **kwargs: Any) -> Digraph:  # pragma: no cover
         """Return a graphviz.Digraph_ object representing the binary tree.
+
         This method's positional and keyword arguments are passed directly into the
         the Digraph's **__init__** method.
+
         :return: graphviz.Digraph_ object representing the binary tree.
         :raise binarytree.exceptions.GraphvizImportError: If graphviz is not installed
+
         .. code-block:: python
             >>> from binarytree import tree
             >>>
@@ -492,12 +574,9 @@ class Node:
             >>> graph = t.graphviz()    # Generate a graphviz object
             >>> graph.body              # Get the DOT body
             >>> graph.render()          # Render the graph
+
         .. _graphviz.Digraph: https://graphviz.readthedocs.io/en/stable/api.html#digraph
         """
-        if not GRAPHVIZ_INSTALLED:
-            raise GraphvizImportError(
-                "Can't use graphviz method if graphviz module is not installed"
-            )
         if "node_attr" not in kwargs:
             kwargs["node_attr"] = {
                 "shape": "record",
@@ -507,13 +586,18 @@ class Node:
                 "fontcolor": "black",
             }
         digraph = Digraph(*args, **kwargs)
+
         for node in self:
             node_id = str(id(node))
+
             digraph.node(node_id, nohtml(f"<l>|<v> {node.value}|<r>"))
+
             if node.left is not None:
                 digraph.edge(f"{node_id}:l", f"{id(node.left)}:v")
+
             if node.right is not None:
                 digraph.edge(f"{node_id}:r", f"{id(node.right)}:v")
+
         return digraph
 
     def pprint(self, index: bool = False, delimiter: str = "-") -> None:
@@ -590,46 +674,47 @@ class Node:
             NodeReferenceError: cyclic node reference at index 0
         """
         has_more_nodes = True
-        visited = set()
-        to_visit: List[Optional[Node]] = [self]
-        index = 0
+        nodes_seen = set()
+        current_nodes: List[Optional[Node]] = [self]
+        node_index = 0  # level-order index
 
         while has_more_nodes:
-            has_more_nodes = False
-            next_level: List[Optional[Node]] = []
 
-            for node in to_visit:
+            has_more_nodes = False
+            next_nodes: List[Optional[Node]] = []
+
+            for node in current_nodes:
                 if node is None:
-                    next_level.append(None)
-                    next_level.append(None)
+                    next_nodes.append(None)
+                    next_nodes.append(None)
                 else:
-                    if node in visited:
+                    if node in nodes_seen:
                         raise NodeReferenceError(
                             f"cyclic reference at Node({node.val}) "
-                            + f"(level-order index {index})"
+                            + f"(level-order index {node_index})"
                         )
                     if not isinstance(node, Node):
                         raise NodeTypeError(
-                            "invalid node instance at index {}".format(index)
+                            "invalid node instance at index {}".format(node_index)
                         )
                     if not isinstance(node.val, (float, int)):
                         raise NodeValueError(
-                            "invalid node value at index {}".format(index)
+                            "invalid node value at index {}".format(node_index)
                         )
-                    if not isinstance(node.value, (float, int)):
+                    if not isinstance(node.value, (float, int)):  # pragma: no cover
                         raise NodeValueError(
-                            "invalid node value at index {}".format(index)
+                            "invalid node value at index {}".format(node_index)
                         )
                     if node.left is not None or node.right is not None:
                         has_more_nodes = True
 
-                    visited.add(node)
-                    next_level.append(node.left)
-                    next_level.append(node.right)
+                    nodes_seen.add(node)
+                    next_nodes.append(node.left)
+                    next_nodes.append(node.right)
 
-                index += 1
+                node_index += 1
 
-            to_visit = next_level
+            current_nodes = next_nodes
 
     @property
     def values(self) -> List[Optional[NodeValue]]:
@@ -660,35 +745,34 @@ class Node:
             >>> root.values
             [1, 2, 3, None, 4]
         """
-        current_level: List[Optional[Node]] = [self]
+        current_nodes: List[Optional[Node]] = [self]
         has_more_nodes = True
-        values: List[Optional[NodeValue]] = []
+        node_values: List[Optional[NodeValue]] = []
 
         while has_more_nodes:
             has_more_nodes = False
-            next_level: List[Optional[Node]] = []
+            next_nodes: List[Optional[Node]] = []
 
-            for node in current_level:
+            for node in current_nodes:
                 if node is None:
-                    values.append(None)
-                    next_level.append(None)
-                    next_level.append(None)
-                    continue
+                    node_values.append(None)
+                    next_nodes.append(None)
+                    next_nodes.append(None)
+                else:
+                    if node.left is not None or node.right is not None:
+                        has_more_nodes = True
 
-                if node.left is not None or node.right is not None:
-                    has_more_nodes = True
+                    node_values.append(node.val)
+                    next_nodes.append(node.left)
+                    next_nodes.append(node.right)
 
-                values.append(node.val)
-                next_level.append(node.left)
-                next_level.append(node.right)
-
-            current_level = next_level
+            current_nodes = next_nodes
 
         # Get rid of trailing None values
-        while values and values[-1] is None:
-            values.pop()
+        while node_values and node_values[-1] is None:
+            node_values.pop()
 
-        return values
+        return node_values
 
     @property
     def leaves(self) -> List["Node"]:
@@ -721,20 +805,20 @@ class Node:
             >>> root.leaves
             [Node(3), Node(4)]
         """
-        current_level = [self]
+        current_nodes = [self]
         leaves = []
 
-        while len(current_level) > 0:
-            next_level = []
-            for node in current_level:
+        while len(current_nodes) > 0:
+            next_nodes = []
+            for node in current_nodes:
                 if node.left is None and node.right is None:
                     leaves.append(node)
                     continue
                 if node.left is not None:
-                    next_level.append(node.left)
+                    next_nodes.append(node.left)
                 if node.right is not None:
-                    next_level.append(node.right)
-            current_level = next_level
+                    next_nodes.append(node.right)
+            current_nodes = next_nodes
         return leaves
 
     @property
@@ -767,18 +851,21 @@ class Node:
             >>> root.levels
             [[Node(1)], [Node(2), Node(3)], [Node(4)]]
         """
-        current_level = [self]
+        current_nodes = [self]
         levels = []
 
-        while len(current_level) > 0:
-            next_level = []
-            for node in current_level:
+        while len(current_nodes) > 0:
+            next_nodes = []
+
+            for node in current_nodes:
                 if node.left is not None:
-                    next_level.append(node.left)
+                    next_nodes.append(node.left)
                 if node.right is not None:
-                    next_level.append(node.right)
-            levels.append(current_level)
-            current_level = next_level
+                    next_nodes.append(node.right)
+
+            levels.append(current_nodes)
+            current_nodes = next_nodes
+
         return levels
 
     @property
@@ -1489,18 +1576,18 @@ class Node:
             >>> root.levelorder
             [Node(1), Node(2), Node(3), Node(4), Node(5)]
         """
-        current_level = [self]
+        current_nodes = [self]
         result = []
 
-        while len(current_level) > 0:
-            next_level = []
-            for node in current_level:
+        while len(current_nodes) > 0:
+            next_nodes = []
+            for node in current_nodes:
                 result.append(node)
                 if node.left is not None:
-                    next_level.append(node.left)
+                    next_nodes.append(node.left)
                 if node.right is not None:
-                    next_level.append(node.right)
-            current_level = next_level
+                    next_nodes.append(node.right)
+            current_nodes = next_nodes
 
         return result
 
@@ -1645,7 +1732,10 @@ def _generate_random_node_values(height: int) -> List[int]:
 
 
 def _build_tree_string(
-    root: Optional[Node], curr_index: int, index: bool = False, delimiter: str = "-"
+    root: Optional[Node],
+    curr_index: int,
+    include_index: bool = False,
+    delimiter: str = "-",
 ) -> Tuple[List[str], int, int, int]:
     """Recursively walk down the binary tree and build a pretty-print string.
 
@@ -1660,9 +1750,9 @@ def _build_tree_string(
     :type root: binarytree.Node | None
     :param curr_index: Level-order_ index of the current node (root node is 0).
     :type curr_index: int
-    :param index: If set to True, include the level-order_ node indexes using
+    :param include_index: If set to True, include the level-order_ node indexes using
         the following format: ``{index}{delimiter}{value}`` (default: False).
-    :type index: bool
+    :type include_index: bool
     :param delimiter: Delimiter character between the node index and the node
         value (default: '-').
     :type delimiter:
@@ -1679,7 +1769,7 @@ def _build_tree_string(
 
     line1 = []
     line2 = []
-    if index:
+    if include_index:
         node_repr = "{}{}{}".format(curr_index, delimiter, root.val)
     else:
         node_repr = str(root.val)
@@ -1688,10 +1778,10 @@ def _build_tree_string(
 
     # Get the left and right sub-boxes, their widths, and root repr positions
     l_box, l_box_width, l_root_start, l_root_end = _build_tree_string(
-        root.left, 2 * curr_index + 1, index, delimiter
+        root.left, 2 * curr_index + 1, include_index, delimiter
     )
     r_box, r_box_width, r_root_start, r_root_end = _build_tree_string(
-        root.right, 2 * curr_index + 2, index, delimiter
+        root.right, 2 * curr_index + 2, include_index, delimiter
     )
 
     # Draw the branch connecting the current root node to the left sub-box
@@ -1752,14 +1842,14 @@ def _get_tree_properties(root: Node) -> NodeProperties:
     max_leaf_depth = -1
     is_strict = True
     is_complete = True
-    current_level = [root]
+    current_nodes = [root]
     non_full_node_seen = False
 
-    while len(current_level) > 0:
+    while len(current_nodes) > 0:
         max_leaf_depth += 1
-        next_level = []
+        next_nodes = []
 
-        for node in current_level:
+        for node in current_nodes:
             size += 1
             val = node.val
             min_node_value = min(val, min_node_value)
@@ -1776,7 +1866,7 @@ def _get_tree_properties(root: Node) -> NodeProperties:
                     is_descending = False
                 elif node.left.val < val:
                     is_ascending = False
-                next_level.append(node.left)
+                next_nodes.append(node.left)
                 is_complete = not non_full_node_seen
             else:
                 non_full_node_seen = True
@@ -1786,7 +1876,7 @@ def _get_tree_properties(root: Node) -> NodeProperties:
                     is_descending = False
                 elif node.right.val < val:
                     is_ascending = False
-                next_level.append(node.right)
+                next_nodes.append(node.right)
                 is_complete = not non_full_node_seen
             else:
                 non_full_node_seen = True
@@ -1794,7 +1884,7 @@ def _get_tree_properties(root: Node) -> NodeProperties:
             # If we see a node with only one child, it is not strict
             is_strict &= (node.left is None) == (node.right is None)
 
-        current_level = next_level
+        current_nodes = next_nodes
 
     return NodeProperties(
         height=max_leaf_depth,
@@ -1918,7 +2008,7 @@ def build(values: List[int]) -> Optional[Node]:
                 raise NodeNotFoundError(
                     "parent node missing at index {}".format(parent_index)
                 )
-            setattr(parent, LEFT_FIELD if index % 2 else RIGHT_FIELD, node)
+            setattr(parent, _ATTR_LEFT if index % 2 else _ATTR_RIGHT, node)
 
     return nodes[0] if nodes else None
 
@@ -1982,7 +2072,7 @@ def tree(height: int = 3, is_perfect: bool = False) -> Optional[Node]:
         inserted = False
 
         while depth < height and not inserted:
-            attr = random.choice((LEFT_FIELD, RIGHT_FIELD))
+            attr = random.choice((_ATTR_LEFT, _ATTR_RIGHT))
             if getattr(node, attr) is None:
                 setattr(node, attr, Node(value))
                 inserted = True
@@ -2048,7 +2138,7 @@ def bst(height: int = 3, is_perfect: bool = False) -> Optional[Node]:
         inserted = False
 
         while depth < height and not inserted:
-            attr = LEFT_FIELD if node.val > value else RIGHT_FIELD
+            attr = _ATTR_LEFT if node.val > value else _ATTR_RIGHT
             if getattr(node, attr) is None:
                 setattr(node, attr, Node(value))
                 inserted = True
