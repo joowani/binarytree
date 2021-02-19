@@ -1,11 +1,11 @@
 Binarytree
 ----------
 
-Welcome to the documentation for **binarytree**!
+Welcome to the documentation for **binarytree**.
 
 **Binarytree** is Python library which lets you generate, visualize, inspect and
 manipulate binary trees. Skip the tedious work of setting up test data, and dive
-straight into practising algorithms! Heaps and BSTs (binary search trees) are also
+straight into practising algorithms. Heaps and BSTs (binary search trees) are also
 supported.
 
 Requirements

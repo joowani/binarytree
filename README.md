@@ -11,16 +11,16 @@ Are you studying binary trees for your next exam, assignment or technical interv
 
 **Binarytree** is a Python library which lets you generate, visualize, inspect and 
 manipulate binary trees. Skip the tedious work of setting up test data, and dive 
-straight into practising your algorithms! Heaps and BSTs (binary search trees) are 
+straight into practising your algorithms. Heaps and BSTs (binary search trees) are 
 also supported.
 
-![](gifs/demo.gif)
+![IPython Demo](gifs/demo.gif)
 
 **New in version 6.0.0**: You can now use binarytree with 
 [Graphviz](https://graphviz.org) and [Jupyter Notebooks](https://jupyter.org) 
 ([documentation](https://binarytree.readthedocs.io/en/main/graphviz.html)):
 
-![](gifs/jupyter.gif)
+![Jupyter Demo](gifs/jupyter.gif)
 
 ## Requirements
 
