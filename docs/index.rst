@@ -1,5 +1,12 @@
-Binarytree
-----------
+Binarytree: Python Library for Studying Binary Trees
+----------------------------------------------------
+
+.. image:: https://img.shields.io/github/license/joowani/binarytree?color=bright
+    :alt: GitHub License
+    :target: https://github.com/joowani/binarytree/blob/main/LICENSE
+
+.. image:: https://img.shields.io/badge/python-3.6%2B-blue
+    :alt: Python Versions
 
 Welcome to the documentation for **binarytree**.
 
