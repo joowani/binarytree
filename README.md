@@ -16,9 +16,8 @@ also supported.
 
 ![IPython Demo](gifs/demo.gif)
 
-**New in version 6.0.0**: You can now use binarytree with 
-[Graphviz](https://graphviz.org) and [Jupyter Notebooks](https://jupyter.org) 
-([documentation](https://binarytree.readthedocs.io/en/main/graphviz.html)):
+Binarytree can be used with [Graphviz](https://graphviz.org) and
+[Jupyter Notebooks](https://jupyter.org) as well:
 
 ![Jupyter Demo](gifs/jupyter.gif)
 
@@ -58,16 +57,16 @@ Generate and pretty-print various types of binary trees:
 ```python
 from binarytree import tree, bst, heap
 
-# Generate a random binary tree and return its root node
+# Generate a random binary tree and return its root node.
 my_tree = tree(height=3, is_perfect=False)
 
-# Generate a random BST and return its root node
+# Generate a random BST and return its root node.
 my_bst = bst(height=3, is_perfect=True)
 
-# Generate a random max heap and return its root node
+# Generate a random max heap and return its root node.
 my_heap = heap(height=3, is_max=True, is_perfect=False)
 
-# Pretty-print the trees in stdout
+# Pretty-print the trees in stdout.
 print(my_tree)
 #
 #        _______1_____
@@ -154,7 +153,7 @@ assert root.min_leaf_depth == 1
 assert root.min_node_value == 1
 assert root.size == 5
 
-# See all properties at once:
+# See all properties at once.
 assert root.properties == {
     'height': 2,
     'is_balanced': True,
@@ -178,6 +177,21 @@ print(root.leaves)
 print(root.levels)
 # [[Node(1)], [Node(2), Node(3)], [Node(4), Node(5)]]
 ```
+
+Compare and clone trees:
+```python
+from binarytree import tree
+
+original = tree()
+
+# Clone the binary tree.
+clone = original.clone()
+
+# Check if the trees are equal.
+original.equals(clone)
+```
+
+
 Use [level-order (breadth-first)](https://en.wikipedia.org/wiki/Tree_traversal#Breadth-first_search) 
 indexes to manipulate nodes:
 
@@ -213,7 +227,7 @@ root.pprint(index=True)
 print(root[9])
 # Node(5)
 
-# Replace the node/subtree at index 4
+# Replace the node/subtree at index 4.
 root[4] = Node(6, left=Node(7), right=Node(8))
 root.pprint(index=True)
 #
@@ -226,7 +240,7 @@ root.pprint(index=True)
 #        9-7     10-8
 #
 
-# Delete the node/subtree at index 1
+# Delete the node/subtree at index 1.
 del root[1]
 root.pprint(index=True)
 #
@@ -292,6 +306,43 @@ print(root)
 # Go back to list representation
 print(root.values) 
 # [7, 3, 2, 6, 9, None, 1, 5, 8]
+```
+
+Binarytree supports another representation which is more compact but without
+the [indexing properties](https://en.wikipedia.org/wiki/Binary_tree#Arrays):
+
+```python
+from binarytree import build, build2, Node
+
+# First let's create an example tree.
+root = Node(1)
+root.left = Node(2)
+root.left.left = Node(3)
+root.left.left.left = Node(4)
+root.left.left.right = Node(5)
+print(root)
+#
+#           1
+#          /
+#       __2
+#      /
+#     3
+#    / \
+#   4   5
+
+# First representation is was already shown above.
+# All "null" nodes in each level are present.
+print(root.values)
+# [1, 2, None, 3, None, None, None, 4, 5]
+
+# Second representation is more compact but without the indexing properties.
+print(root.values2)
+# [1, 2, None, 3, None, 4, 5]
+
+# Build trees from the list representations
+tree1 = build(root.values)
+tree2 = build2(root.values2)
+assert tree1.equals(tree2) is True
 ```
 
 Check out the [documentation](http://binarytree.readthedocs.io) for more details.

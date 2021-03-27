@@ -6,6 +6,7 @@ functions:
 
 * :class:`binarytree.Node`
 * :func:`binarytree.build`
+* :func:`binarytree.build2`
 * :func:`binarytree.tree`
 * :func:`binarytree.bst`
 * :func:`binarytree.heap`
@@ -24,6 +25,11 @@ Function: binarytree.build
 ==========================
 
 .. autofunction:: binarytree.build
+
+Function: binarytree.build2
+===========================
+
+.. autofunction:: binarytree.build2
 
 Function: binarytree.tree
 =========================

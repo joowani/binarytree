@@ -5,7 +5,7 @@ import random
 
 import pytest
 
-from binarytree import Node, bst, build, get_parent, heap, tree
+from binarytree import Node, bst, build, build2, get_parent, heap, tree
 from binarytree.exceptions import (
     NodeIndexError,
     NodeModifyError,
@@ -154,8 +154,52 @@ def test_node_set_attributes():
     assert str(err.value) == "right child must be a Node instance"
 
 
+# noinspection PyTypeChecker
+def test_tree_equals():
+    root1 = Node(1)
+    root2 = Node(1)
+    assert root1.equals(None) is False
+    assert root1.equals(1) is False
+    assert root1.equals(Node(2)) is False
+    assert root1.equals(root2) is True
+    assert root2.equals(root1) is True
+
+    root1.left = Node(2)
+    assert root1.equals(root2) is False
+    assert root2.equals(root1) is False
+
+    root2.left = Node(2)
+    assert root1.equals(root2) is True
+    assert root2.equals(root1) is True
+
+    root1.right = Node(3)
+    assert root1.equals(root2) is False
+    assert root2.equals(root1) is False
+
+    root2.right = Node(3)
+    assert root1.equals(root2) is True
+    assert root2.equals(root1) is True
+
+    root1.right.left = Node(4)
+    assert root1.equals(root2) is False
+    assert root2.equals(root1) is False
+
+    root2.right.left = Node(4)
+    assert root1.equals(root2) is True
+    assert root2.equals(root1) is True
+
+
+def test_tree_clone():
+    for _ in range(REPETITIONS):
+        root = tree()
+        clone = root.clone()
+        assert root.values == clone.values
+        assert root.equals(clone)
+        assert clone.equals(root)
+
+
 # noinspection PyUnresolvedReferences
-def test_tree_build():
+def test_list_representation():
     root = build([])
     assert root is None
 
@@ -196,6 +240,120 @@ def test_tree_build():
     with pytest.raises(NodeNotFoundError) as err:
         build([1, None, 2, 3, 4])
     assert str(err.value) == "parent node missing at index 1"
+
+    root = Node(1)
+    assert root.values == [1]
+
+    root.right = Node(3)
+    assert root.values == [1, None, 3]
+
+    root.left = Node(2)
+    assert root.values == [1, 2, 3]
+
+    root.right.left = Node(4)
+    assert root.values == [1, 2, 3, None, None, 4]
+
+    root.right.right = Node(5)
+    assert root.values == [1, 2, 3, None, None, 4, 5]
+
+    root.left.left = Node(6)
+    assert root.values == [1, 2, 3, 6, None, 4, 5]
+
+    root.left.right = Node(7)
+    assert root.values == [1, 2, 3, 6, 7, 4, 5]
+
+    for _ in range(REPETITIONS):
+        t1 = tree()
+        t2 = build(t1.values)
+        assert t1.values == t2.values
+
+
+# noinspection PyUnresolvedReferences
+def test_list_representation2():
+    root = build2([])
+    assert root is None
+
+    root = build2([1])
+    assert root.val == 1
+    assert root.left is None
+    assert root.right is None
+
+    root = build2([1, 2])
+    assert root.val == 1
+    assert root.left.val == 2
+    assert root.right is None
+
+    root = build2([1, 2, 3])
+    assert root.val == 1
+    assert root.left.val == 2
+    assert root.right.val == 3
+    assert root.left.left is None
+    assert root.left.right is None
+    assert root.right.left is None
+    assert root.right.right is None
+
+    root = build2([1, 2, 3, None, 4])
+    assert root.val == 1
+    assert root.left.val == 2
+    assert root.right.val == 3
+    assert root.left.left is None
+    assert root.left.right.val == 4
+    assert root.right.left is None
+    assert root.right.right is None
+    assert root.left.right.left is None
+    assert root.left.right.right is None
+
+    root = build2([1, None, 2, 3, 4])
+    assert root.val == 1
+    assert root.left is None
+    assert root.right.val == 2
+    assert root.right.left.val == 3
+    assert root.right.right.val == 4
+
+    root = build2([2, 5, None, 3, None, 1, 4])
+    assert root.val == 2
+    assert root.left.val == 5
+    assert root.right is None
+    assert root.left.left.val == 3
+    assert root.left.left.left.val == 1
+    assert root.left.left.right.val == 4
+
+    with pytest.raises(NodeValueError):
+        build2([None, 1, 2])
+
+    root = Node(1)
+    assert root.values2 == [1]
+    root.right = Node(3)
+    assert root.values2 == [1, None, 3]
+    root.left = Node(2)
+    assert root.values2 == [1, 2, 3]
+    root.right.left = Node(4)
+    assert root.values2 == [1, 2, 3, None, None, 4]
+    root.right.right = Node(5)
+    assert root.values2 == [1, 2, 3, None, None, 4, 5]
+    root.left.left = Node(6)
+    assert root.values2 == [1, 2, 3, 6, None, 4, 5]
+    root.left.right = Node(7)
+    assert root.values2 == [1, 2, 3, 6, 7, 4, 5]
+
+    root = Node(1)
+    assert root.values2 == [1]
+    root.left = Node(2)
+    assert root.values2 == [1, 2]
+    root.right = Node(3)
+    assert root.values2 == [1, 2, 3]
+    root.right = None
+    root.left.left = Node(3)
+    assert root.values2 == [1, 2, None, 3]
+    root.left.left.left = Node(4)
+    assert root.values2 == [1, 2, None, 3, None, 4]
+    root.left.left.right = Node(5)
+    assert root.values2 == [1, 2, None, 3, None, 4, 5]
+
+    for _ in range(REPETITIONS):
+        t1 = tree()
+        t2 = build2(t1.values2)
+        assert t1.values2 == t2.values2
 
 
 def test_tree_get_node():
@@ -730,29 +888,6 @@ def test_tree_traversal():
     assert n1.preorder == [n1, n2, n4, n5, n3]
     assert n1.postorder == [n4, n5, n2, n3, n1]
     assert n1.levelorder == [n1, n2, n3, n4, n5]
-
-
-def test_tree_list_representation():
-    root = Node(1)
-    assert root.values == [1]
-
-    root.right = Node(3)
-    assert root.values == [1, None, 3]
-
-    root.left = Node(2)
-    assert root.values == [1, 2, 3]
-
-    root.right.left = Node(4)
-    assert root.values == [1, 2, 3, None, None, 4]
-
-    root.right.right = Node(5)
-    assert root.values == [1, 2, 3, None, None, 4, 5]
-
-    root.left.left = Node(6)
-    assert root.values == [1, 2, 3, 6, None, 4, 5]
-
-    root.left.right = Node(7)
-    assert root.values == [1, 2, 3, 6, 7, 4, 5]
 
 
 def test_tree_generation():

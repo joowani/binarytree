@@ -1,4 +1,13 @@
-__all__ = ["Node", "tree", "bst", "heap", "build", "get_parent", "__version__"]
+__all__ = [
+    "Node",
+    "tree",
+    "bst",
+    "heap",
+    "build",
+    "build2",
+    "get_parent",
+    "__version__",
+]
 
 import heapq
 import random
@@ -567,6 +576,7 @@ class Node:
         :raise binarytree.exceptions.GraphvizImportError: If graphviz is not installed
 
         .. code-block:: python
+
             >>> from binarytree import tree
             >>>
             >>> t = tree()
@@ -716,6 +726,64 @@ class Node:
 
             current_nodes = next_nodes
 
+    def equals(self, other: "Node") -> bool:
+        """Check if this binary tree is equal to other binary tree.
+
+        :param other: Root of the other binary tree.
+        :type other: binarytree.Node
+        :return: True if the binary trees a equal, False otherwise.
+        :rtype: bool
+        """
+        stack1: List[Optional[Node]] = [self]
+        stack2: List[Optional[Node]] = [other]
+
+        while stack1 or stack2:
+            node1 = stack1.pop()
+            node2 = stack2.pop()
+
+            if node1 is None and node2 is None:
+                continue
+            elif node1 is None or node2 is None:
+                return False
+            elif not isinstance(node2, Node):
+                return False
+            else:
+                if node1.val != node2.val:
+                    return False
+                stack1.append(node1.right)
+                stack1.append(node1.left)
+                stack2.append(node2.right)
+                stack2.append(node2.left)
+
+        return True
+
+    def clone(self) -> "Node":
+        """Return a clone of this binary tree.
+
+        :return: Root of the clone.
+        :rtype: binarytree.Node
+        """
+        other = Node(self.val)
+
+        stack1 = [self]
+        stack2 = [other]
+
+        while stack1 or stack2:
+            node1 = stack1.pop()
+            node2 = stack2.pop()
+
+            if node1.left is not None:
+                node2.left = Node(node1.left.val)
+                stack1.append(node1.left)
+                stack2.append(node2.left)
+
+            if node1.right is not None:
+                node2.right = Node(node1.right.val)
+                stack1.append(node1.right)
+                stack2.append(node2.right)
+
+        return other
+
     @property
     def values(self) -> List[Optional[NodeValue]]:
         """Return the `list representation`_ of the binary tree.
@@ -723,12 +791,11 @@ class Node:
         .. _list representation:
             https://en.wikipedia.org/wiki/Binary_tree#Arrays
 
-        :return: List representation of the binary tree, which is a list of
-            node values in breadth-first order starting from the root (current
-            node). If a node is at index i, its left child is always at 2i + 1,
-            right child at 2i + 2, and parent at index floor((i - 1) / 2). None
-            indicates absence of a node at that index. See example below for an
-            illustration.
+        :return: List representation of the binary tree, which is a list of node values
+            in breadth-first order starting from the root. If a node is at index i, its
+            left child is always at 2i + 1, right child at 2i + 2, and parent at index
+            floor((i - 1) / 2). None indicates absence of a node at that index. See
+            example below for an illustration.
         :rtype: [float | int | None]
 
         **Example**:
@@ -739,11 +806,12 @@ class Node:
             >>>
             >>> root = Node(1)
             >>> root.left = Node(2)
-            >>> root.right = Node(3)
-            >>> root.left.right = Node(4)
+            >>> root.left.left = Node(3)
+            >>> root.left.left.left = Node(4)
+            >>> root.left.left.right = Node(5)
             >>>
             >>> root.values
-            [1, 2, 3, None, 4]
+            [1, 2, None, 3, None, None, None, 4, 5]
         """
         current_nodes: List[Optional[Node]] = [self]
         has_more_nodes = True
@@ -765,6 +833,62 @@ class Node:
                     node_values.append(node.val)
                     next_nodes.append(node.left)
                     next_nodes.append(node.right)
+
+            current_nodes = next_nodes
+
+        # Get rid of trailing None values
+        while node_values and node_values[-1] is None:
+            node_values.pop()
+
+        return node_values
+
+    @property
+    def values2(self) -> List[Optional[NodeValue]]:
+        """Return the list representation (version 2) of the binary tree.
+
+        :return: List of node values like those from :func:`binarytree.Node.values`,
+            but with a slightly different representation which associates two adjacent
+            child values with the first parent value that has not been associated yet.
+            This representation does not provide the same indexing properties where if
+            a node is at index i, its left child is always at 2i + 1, right child at
+            2i + 2, and parent at floor((i - 1) / 2), but it allows for more compact
+            lists as it does not hold "None"s between nodes in each level. See example
+            below for an illustration.
+        :rtype: [float | int | None]
+
+        **Example**:
+
+        .. doctest::
+
+            >>> from binarytree import Node
+            >>>
+            >>> root = Node(1)
+            >>> root.left = Node(2)
+            >>> root.left.left = Node(3)
+            >>> root.left.left.left = Node(4)
+            >>> root.left.left.right = Node(5)
+            >>>
+            >>> root.values
+            [1, 2, None, 3, None, None, None, 4, 5]
+            >>> root.values2
+            [1, 2, None, 3, None, 4, 5]
+        """
+        current_nodes: List[Node] = [self]
+        has_more_nodes = True
+        node_values: List[Optional[NodeValue]] = [self.value]
+
+        while has_more_nodes:
+            has_more_nodes = False
+            next_nodes: List[Node] = []
+
+            for node in current_nodes:
+                for child in node.left, node.right:
+                    if child is None:
+                        node_values.append(None)
+                    else:
+                        has_more_nodes = True
+                        node_values.append(child.value)
+                        next_nodes.append(child)
 
             current_nodes = next_nodes
 
@@ -1717,7 +1841,7 @@ def _generate_random_leaf_count(height: int) -> int:
     return roll_1 + roll_2 or half_leaf_count
 
 
-def _generate_random_node_values(height: int) -> List[int]:
+def _generate_random_node_values(height: int) -> List[NodeValue]:
     """Return random node values for building binary trees.
 
     :param height: Height of the binary tree.
@@ -1726,7 +1850,7 @@ def _generate_random_node_values(height: int) -> List[int]:
     :rtype: [int]
     """
     max_node_count = 2 ** (height + 1) - 1
-    node_values = list(range(max_node_count))
+    node_values: List[NodeValue] = list(range(max_node_count))
     random.shuffle(node_values)
     return node_values
 
@@ -1954,7 +2078,7 @@ def get_parent(root: Node, child: Node) -> Optional[Node]:
     return None
 
 
-def build(values: List[int]) -> Optional[Node]:
+def build(values: List[NodeValue]) -> Optional[Node]:
     """Build a tree from `list representation`_ and return its root node.
 
     .. _list representation:
@@ -1963,7 +2087,7 @@ def build(values: List[int]) -> Optional[Node]:
     :param values: List representation of the binary tree, which is a list of
         node values in breadth-first order starting from the root (current
         node). If a node is at index i, its left child is always at 2i + 1,
-        right child at 2i + 2, and parent at floor((i - 1) / 2). None indicates
+        right child at 2i + 2, and parent at floor((i - 1) / 2). "None" indicates
         absence of a node at that index. See example below for an illustration.
     :type values: [int | float | None]
     :return: Root node of the binary tree.
@@ -2011,6 +2135,75 @@ def build(values: List[int]) -> Optional[Node]:
             setattr(parent, _ATTR_LEFT if index % 2 else _ATTR_RIGHT, node)
 
     return nodes[0] if nodes else None
+
+
+def build2(values: List[NodeValue]) -> Optional[Node]:
+    """Build a tree from a list of values and return its root node.
+
+    :param values: List of node values like those for :func:`binarytree.build`, but
+        with a slightly different representation which associates two adjacent child
+        values with the first parent value that has not been associated yet. This
+        representation does not provide the same indexing properties where if a node
+        is at index i, its left child is always at 2i + 1, right child at 2i + 2, and
+        parent at floor((i - 1) / 2), but it allows for more compact lists as it
+        does not hold "None"s between nodes in each level. See example below for an
+        illustration.
+    :type values: [int | float | None]
+    :return: Root node of the binary tree.
+    :rtype: binarytree.Node | None
+    :raise binarytree.exceptions.NodeNotFoundError: If the list representation
+        is malformed (e.g. a parent node is missing).
+
+    **Example**:
+
+    .. doctest::
+
+        >>> from binarytree import build2
+        >>>
+        >>> root = build2([2, 5, None, 3, None, 1, 4])
+        >>>
+        >>> print(root)
+        <BLANKLINE>
+                2
+               /
+            __5
+           /
+          3
+         / \\
+        1   4
+        <BLANKLINE>
+
+    .. doctest::
+
+        >>> from binarytree import build2
+        >>>
+        >>> root = build2([None, 1, 2])  # doctest: +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+         ...
+        NodeValueError: node value must be a float or int
+    """
+    queue: Deque[Node] = deque()
+    root: Optional[Node] = None
+
+    if values:
+        root = Node(values[0])
+        queue.append(root)
+
+    index = 1
+    while index < len(values):
+        node = queue.popleft()
+
+        if values[index] is not None:
+            node.left = Node(values[index])
+            queue.append(node.left)
+        index += 1
+
+        if index < len(values) and values[index] is not None:
+            node.right = Node(values[index])
+            queue.append(node.right)
+        index += 1
+
+    return root
 
 
 def tree(height: int = 3, is_perfect: bool = False) -> Optional[Node]:

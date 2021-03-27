@@ -18,16 +18,16 @@ Generate and pretty-print various types of binary trees:
 
     >>> from binarytree import tree, bst, heap
     >>>
-    >>> # Generate a random binary tree and return its root node
+    >>> # Generate a random binary tree and return its root node.
     >>> my_tree = tree(height=3, is_perfect=False)
     >>>
-    >>> # Generate a random BST and return its root node
+    >>> # Generate a random BST and return its root node.
     >>> my_bst = bst(height=3, is_perfect=True)
     >>>
-    >>> # Generate a random max heap and return its root node
+    >>> # Generate a random max heap and return its root node.
     >>> my_heap = heap(height=3, is_max=True, is_perfect=False)
     >>>
-    >>> # Pretty-print the trees in stdout
+    >>> # Pretty-print the trees in stdout.
     >>> print(my_tree)
 
         _______1_____
@@ -128,7 +128,7 @@ Inspect tree properties:
     >>> root.size
     5
 
-    >>> properties = root.properties  # Get all properties at once
+    >>> properties = root.properties  # Get all properties at once.
     >>> properties['height']
     2
     >>> properties['is_balanced']
@@ -141,6 +141,16 @@ Inspect tree properties:
 
     >>> root.levels
     [[Node(1)], [Node(2), Node(3)], [Node(4), Node(5)]]
+
+Compare and clone trees:
+
+.. doctest::
+
+    >>> from binarytree import tree
+    >>> original = tree()
+    >>> clone = original.clone()
+    >>> original.equals(clone)
+    True
 
 Use `level-order (breadth-first)`_ indexes to manipulate nodes:
 
@@ -167,7 +177,7 @@ Use `level-order (breadth-first)`_ indexes to manipulate nodes:
        /
       5
     <BLANKLINE>
-    >>> # Use binarytree.Node.pprint instead of print to display indexes
+    >>> # Use binarytree.Node.pprint instead of print to display indexes.
     >>> root.pprint(index=True)
     <BLANKLINE>
        _________0-1_
@@ -178,11 +188,11 @@ Use `level-order (breadth-first)`_ indexes to manipulate nodes:
           /
         9-5
     <BLANKLINE>
-    >>> # Return the node/subtree at index 9
+    >>> # Return the node/subtree at index 9.
     >>> root[9]
     Node(5)
 
-    >>> # Replace the node/subtree at index 4
+    >>> # Replace the node/subtree at index 4.
     >>> root[4] = Node(6, left=Node(7), right=Node(8))
     >>> root.pprint(index=True)
     <BLANKLINE>
@@ -194,7 +204,7 @@ Use `level-order (breadth-first)`_ indexes to manipulate nodes:
           /     \
         9-7     10-8
     <BLANKLINE>
-    >>> # Delete the node/subtree at index 1
+    >>> # Delete the node/subtree at index 1.
     >>> del root[1]
     >>> root.pprint(index=True)
     <BLANKLINE>
@@ -235,10 +245,10 @@ Traverse trees using different algorithms:
     >>> root.levelorder
     [Node(1), Node(2), Node(3), Node(4), Node(5)]
 
-    >>> list(root)  # Equivalent to root.levelorder
+    >>> list(root)  # Equivalent to root.levelorder.
     [Node(1), Node(2), Node(3), Node(4), Node(5)]
 
-`List representations`_ are also supported:
+Convert to `List representations`_:
 
 .. _List representations:
     https://en.wikipedia.org/wiki/Binary_tree#Arrays
@@ -247,7 +257,7 @@ Traverse trees using different algorithms:
 
     >>> from binarytree import build
     >>>
-    >>> # Build a tree from list representation
+    >>> # Build a tree from list representation.
     >>> values = [7, 3, 2, 6, 9, None, 1, 5, 8]
     >>> root = build(values)
     >>> print(root)
@@ -260,8 +270,50 @@ Traverse trees using different algorithms:
      / \
     5   8
     <BLANKLINE>
-    >>> # Convert the tree back to list representation
+    >>> # Convert the tree back to list representation.
     >>> root.values
     [7, 3, 2, 6, 9, None, 1, 5, 8]
+
+Binarytree supports another representation which is more compact but without
+the `indexing properties`_:
+
+.. _indexing properties:
+    https://en.wikipedia.org/wiki/Binary_tree#Arrays
+
+.. doctest::
+
+    >>> from binarytree import build, build2, Node
+    >>>
+    >>> # First let's create an example tree.
+    >>> root = Node(1)
+    >>> root.left = Node(2)
+    >>> root.left.left = Node(3)
+    >>> root.left.left.left = Node(4)
+    >>> root.left.left.right = Node(5)
+    >>> print(root)
+    <BLANKLINE>
+            1
+           /
+        __2
+       /
+      3
+     / \
+    4   5
+    <BLANKLINE>
+
+    >>> # First representation is was already shown above.
+    >>> # All "null" nodes in each level are present.
+    >>> root.values
+    [1, 2, None, 3, None, None, None, 4, 5]
+
+    >>> # Second representation is more compact but without the indexing properties.
+    >>> root.values2
+    [1, 2, None, 3, None, 4, 5]
+
+    >>> # Build trees from both list representations.
+    >>> tree1 = build(root.values)
+    >>> tree2 = build2(root.values2)
+    >>> tree1.equals(tree2)
+    True
 
 See :doc:`specs` for more details.
