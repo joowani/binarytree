@@ -13,6 +13,7 @@ import heapq
 import random
 from collections import deque
 from dataclasses import dataclass
+from itertools import zip_longest
 from subprocess import SubprocessError
 from typing import Any, Deque, Dict, Iterator, List, Optional, Tuple, Union
 
@@ -734,27 +735,17 @@ class Node:
         :return: True if the binary trees a equal, False otherwise.
         :rtype: bool
         """
-        stack1: List[Optional[Node]] = [self]
-        stack2: List[Optional[Node]] = [other]
-
-        while stack1 or stack2:
-            node1 = stack1.pop()
-            node2 = stack2.pop()
-
+        if not isinstance(other, Node):
+            return False
+        for node1, node2 in zip_longest(iter(self), iter(other)):
             if node1 is None and node2 is None:
                 continue
-            elif node1 is None or node2 is None:
+            elif not (
+                isinstance(node1, Node)
+                and isinstance(node2, Node)
+                and node1.val == node2.val
+            ):
                 return False
-            elif not isinstance(node2, Node):
-                return False
-            else:
-                if node1.val != node2.val:
-                    return False
-                stack1.append(node1.right)
-                stack1.append(node1.left)
-                stack2.append(node2.right)
-                stack2.append(node2.left)
-
         return True
 
     def clone(self) -> "Node":
