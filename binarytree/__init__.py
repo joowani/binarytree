@@ -35,6 +35,7 @@ _ATTR_LEFT = "left"
 _ATTR_RIGHT = "right"
 _ATTR_VAL = "val"
 _ATTR_VALUE = "value"
+_ATTR_VALUE_TYPES = (float, int)
 _SVG_XML_TEMPLATE = """
 <svg width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg">
 <style>
@@ -55,7 +56,7 @@ _SVG_XML_TEMPLATE = """
 </svg>
 """
 
-NodeValue = Union[float, int]
+NodeValue = Union[_ATTR_VALUE_TYPES]
 
 
 @dataclass
@@ -201,12 +202,12 @@ class Node:
                 raise NodeTypeError("right child must be a Node instance")
 
         elif attr == _ATTR_VALUE:
-            if not isinstance(obj, (float, int)):
+            if not isinstance(obj, _ATTR_VALUE_TYPES):
                 raise NodeValueError("node value must be a float or int")
             object.__setattr__(self, _ATTR_VAL, obj)
 
         elif attr == _ATTR_VAL:
-            if not isinstance(obj, (float, int)):
+            if not isinstance(obj, _ATTR_VALUE_TYPES):
                 raise NodeValueError("node value must be a float or int")
             object.__setattr__(self, _ATTR_VALUE, obj)
 
@@ -707,11 +708,11 @@ class Node:
                         raise NodeTypeError(
                             "invalid node instance at index {}".format(node_index)
                         )
-                    if not isinstance(node.val, (float, int)):
+                    if not isinstance(node.val, _ATTR_VALUE_TYPES):
                         raise NodeValueError(
                             "invalid node value at index {}".format(node_index)
                         )
-                    if not isinstance(node.value, (float, int)):  # pragma: no cover
+                    if not isinstance(node.value, _ATTR_VALUE_TYPES):  # pragma: no cover
                         raise NodeValueError(
                             "invalid node value at index {}".format(node_index)
                         )
