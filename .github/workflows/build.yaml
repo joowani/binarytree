@@ -41,7 +41,8 @@ jobs:
       - name: Run Sphinx HTML
         run: python -m sphinx -b html -W docs docs/_build
       - name: Upload coverge to Codecov
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v2
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.8'
         with:
+          fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
