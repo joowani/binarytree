@@ -2,7 +2,7 @@
 
 ![Build](https://github.com/joowani/binarytree/workflows/Build/badge.svg)
 ![CodeQL](https://github.com/joowani/binarytree/workflows/CodeQL/badge.svg)
-[![codecov](https://codecov.io/gh/joowani/binarytree/branch/main/graph/badge.svg?token=B6sFAVxxsk)](https://codecov.io/gh/joowani/binarytree)
+[![codecov](https://codecov.io/gh/joowani/binarytree/branch/main/graph/badge.svg?token=C2X2OMPL65)](https://codecov.io/gh/joowani/binarytree)
 [![PyPI version](https://badge.fury.io/py/binarytree.svg)](https://badge.fury.io/py/binarytree)
 [![GitHub license](https://img.shields.io/github/license/joowani/binarytree?color=brightgreen)](https://github.com/joowani/binarytree/blob/main/LICENSE)
 ![Python version](https://img.shields.io/badge/python-3.6%2B-blue)
