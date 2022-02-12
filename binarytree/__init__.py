@@ -5,6 +5,7 @@ __all__ = [
     "heap",
     "build",
     "build2",
+    "get_index",
     "get_parent",
     "__version__",
 ]
@@ -2024,6 +2025,75 @@ def _get_tree_properties(root: Node) -> NodeProperties:
         min_leaf_depth=min_leaf_depth,
         max_leaf_depth=max_leaf_depth,
     )
+
+
+def get_index(root: Node, descendent: Node) -> int:
+    """Return the level-order_ index given the root and a possible descendent.
+
+    .. _level-order:
+        https://en.wikipedia.org/wiki/Tree_traversal#Breadth-first_search
+
+    :return: Level-order index of the descendent relative to the root node.
+    :rtype: int
+    :raise binarytree.exceptions.NodeTypeError: If root or descendent is
+        not an instance of :class:`binarytree.Node`.
+    :raise binarytree.exceptions.NodeReferenceError: If given a node that is
+        not a root/descendent.
+
+    **Example**:
+
+    .. doctest::
+
+        >>> from binarytree import Node, get_index
+        >>>
+        >>> root = Node(1)
+        >>> root.left = Node(2)
+        >>> root.right = Node(3)
+        >>> root.left.right = Node(4)
+        >>>
+        >>> get_index(root, root.left)
+        1
+        >>> get_index(root, root.right)
+        2
+        >>> get_index(root, root.left.right)
+        4
+        >>> get_index(root.left, root.right)
+        Traceback (most recent call last):
+         ...
+        NodeReferenceError: given nodes are not in the same tree
+    """
+    if root is None:
+        raise NodeTypeError("root must be a Node instance")
+
+    if descendent is None:
+        raise NodeTypeError("descendent must be a Node instance")
+
+    current_nodes: List[Optional[Node]] = [root]
+    current_index = 0
+    has_more_nodes = True
+
+    while has_more_nodes:
+        has_more_nodes = False
+        next_nodes: List[Optional[Node]] = []
+
+        for node in current_nodes:
+            if node is not None and node is descendent:
+                return current_index
+
+            if node is None:
+                next_nodes.append(None)
+                next_nodes.append(None)
+            else:
+                next_nodes.append(node.left)
+                next_nodes.append(node.right)
+                if node.left is not None or node.right is not None:
+                    has_more_nodes = True
+
+            current_index += 1
+
+        current_nodes = next_nodes
+
+    raise NodeReferenceError("given nodes are not in the same tree")
 
 
 def get_parent(root: Node, child: Node) -> Optional[Node]:

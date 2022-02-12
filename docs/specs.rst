@@ -46,6 +46,11 @@ Function: binarytree.heap
 
 .. autofunction:: binarytree.heap
 
+Function: binarytree.get_index
+===============================
+
+.. autofunction:: binarytree.get_index
+
 Function: binarytree.get_parent
 ===============================
 

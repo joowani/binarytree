@@ -5,7 +5,7 @@ import random
 
 import pytest
 
-from binarytree import Node, bst, build, build2, get_parent, heap, tree
+from binarytree import Node, bst, build, build2, get_index, get_parent, heap, tree
 from binarytree.exceptions import (
     NodeIndexError,
     NodeModifyError,
@@ -1057,6 +1057,34 @@ def test_heap_float_values():
             assert root.min_leaf_depth == root_copy.min_leaf_depth
             assert root.min_node_value == root_copy.min_node_value + 0.1
             assert root.size == root_copy.size
+
+
+def test_get_index():
+    root = Node(0)
+    root.left = Node(1)
+    root.right = Node(2)
+    root.left.left = Node(3)
+    root.right.right = Node(4)
+
+    assert get_index(root, root) == 0
+    assert get_index(root, root.left) == 1
+    assert get_index(root, root.right) == 2
+    assert get_index(root, root.left.left) == 3
+    assert get_index(root, root.right.right) == 6
+
+    with pytest.raises(NodeReferenceError) as err:
+        get_index(root.left, root.right)
+    assert str(err.value) == "given nodes are not in the same tree"
+
+    with pytest.raises(NodeTypeError) as err:
+        # noinspection PyTypeChecker
+        get_index(root, None)
+    assert str(err.value) == "descendent must be a Node instance"
+
+    with pytest.raises(NodeTypeError) as err:
+        # noinspection PyTypeChecker
+        get_index(None, root.left)
+    assert str(err.value) == "root must be a Node instance"
 
 
 # noinspection PyTypeChecker
