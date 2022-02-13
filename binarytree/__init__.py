@@ -512,7 +512,7 @@ class Node:
 
         def scale_x(x: int, y: int) -> float:
             diff = tree_height - y
-            x = 2 ** (diff + 1) * x + 2 ** diff - 1
+            x = 2 ** (diff + 1) * x + 2**diff - 1
             return 1 + node_radius + scale * x / 2
 
         def scale_y(y: int) -> float:
@@ -562,7 +562,7 @@ class Node:
             y += 1
 
         return _SVG_XML_TEMPLATE.format(
-            width=scale * (2 ** tree_height),
+            width=scale * (2**tree_height),
             height=scale * (2 + tree_height),
             body="\n".join(xml),
         )
@@ -1833,7 +1833,7 @@ def _generate_random_leaf_count(height: int) -> int:
     :return: Random leaf count.
     :rtype: int
     """
-    max_leaf_count = 2 ** height
+    max_leaf_count = 2**height
     half_leaf_count = max_leaf_count // 2
 
     # A very naive way of mimicking normal distribution
@@ -2016,7 +2016,7 @@ def _get_tree_properties(root: Node) -> NodeProperties:
         size=size,
         is_max_heap=is_complete and is_descending,
         is_min_heap=is_complete and is_ascending,
-        is_perfect=leaf_count == 2 ** max_leaf_depth,
+        is_perfect=leaf_count == 2**max_leaf_depth,
         is_strict=is_strict,
         is_complete=is_complete,
         leaf_count=leaf_count,
@@ -2486,7 +2486,7 @@ def heap(
 
     if not is_perfect:
         # Randomly cut some of the leaf nodes away
-        random_cut = random.randint(2 ** height, len(values))
+        random_cut = random.randint(2**height, len(values))
         values = values[:random_cut]
 
     if is_max:

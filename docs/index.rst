@@ -5,7 +5,7 @@ Binarytree: Python Library for Studying Binary Trees
     :alt: GitHub License
     :target: https://github.com/joowani/binarytree/blob/main/LICENSE
 
-.. image:: https://img.shields.io/badge/python-3.6%2B-blue
+.. image:: https://img.shields.io/badge/python-3.7%2B-blue
     :alt: Python Versions
 
 Welcome to the documentation for **binarytree**.
@@ -18,7 +18,7 @@ supported.
 Requirements
 ============
 
-Python 3.6+
+Python 3.7+
 
 Installation
 ============
@@ -27,7 +27,7 @@ Install via pip_:
 
 .. code-block:: bash
 
-    pip install binarytree
+    pip install binarytree --upgrade
 
 For conda_ users:
 

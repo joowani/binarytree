@@ -5,7 +5,7 @@
 [![codecov](https://codecov.io/gh/joowani/binarytree/branch/main/graph/badge.svg?token=C2X2OMPL65)](https://codecov.io/gh/joowani/binarytree)
 [![PyPI version](https://badge.fury.io/py/binarytree.svg)](https://badge.fury.io/py/binarytree)
 [![GitHub license](https://img.shields.io/github/license/joowani/binarytree?color=brightgreen)](https://github.com/joowani/binarytree/blob/main/LICENSE)
-![Python version](https://img.shields.io/badge/python-3.6%2B-blue)
+![Python version](https://img.shields.io/badge/python-3.7%2B-blue)
 
 Are you studying binary trees for your next exam, assignment or technical interview?
 
@@ -23,14 +23,14 @@ Binarytree can be used with [Graphviz](https://graphviz.org) and
 
 ## Requirements
 
-Python 3.6+
+Python 3.7+
 
 ## Installation
 
 Install via [pip](https://pip.pypa.io):
 
 ```shell
-pip install binarytree
+pip install binarytree --upgrade
 ```
 
 For [conda](https://docs.conda.io) users:

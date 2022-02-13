@@ -11,3 +11,9 @@ testpaths = ["tests"]
 
 [tool.setuptools_scm]
 write_to = "binarytree/version.py"
+
+[tool.mypy]
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+strict = true
