@@ -14,6 +14,8 @@ manipulate binary trees. Skip the tedious work of setting up test data, and dive
 straight into practising your algorithms. Heaps and BSTs (binary search trees) are 
 also supported.
 
+Check out the [documentation](http://binarytree.readthedocs.io) for more details.
+
 ![IPython Demo](gifs/demo.gif)
 
 Binarytree can be used with [Graphviz](https://graphviz.org) and
@@ -47,7 +49,7 @@ Binarytree uses the following class to represent a node:
 class Node:
 
     def __init__(self, value, left=None, right=None):
-        self.value = value  # The node value (integer)
+        self.value = value  # The node value (float/int/str)
         self.left = left    # Left child
         self.right = right  # Right child
 ```
@@ -330,7 +332,7 @@ print(root)
 #    / \
 #   4   5
 
-# First representation is was already shown above.
+# First representation is already shown above.
 # All "null" nodes in each level are present.
 print(root.values)
 # [1, 2, None, 3, None, None, None, 4, 5]

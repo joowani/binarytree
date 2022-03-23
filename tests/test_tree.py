@@ -2,10 +2,21 @@ from __future__ import absolute_import, unicode_literals
 
 import copy
 import random
+from typing import Any, List, Optional
 
 import pytest
 
-from binarytree import Node, bst, build, build2, get_index, get_parent, heap, tree
+from binarytree import (
+    Node,
+    bst,
+    build,
+    build2,
+    get_index,
+    get_parent,
+    heap,
+    number_to_letters,
+    tree,
+)
 from binarytree.exceptions import (
     NodeIndexError,
     NodeModifyError,
@@ -72,10 +83,10 @@ EXPECTED_SVG_XML_MULTIPLE_NODES = """
 </g>
 </svg>
 """
+EMPTY_LIST: List[Optional[int]] = []
 
 
-# noinspection PyTypeChecker
-def test_node_set_attributes():
+def test_node_init_and_setattr_with_integers() -> None:
     root = Node(1)
     assert root.left is None
     assert root.right is None
@@ -118,48 +129,132 @@ def test_node_set_attributes():
     assert root.left.right is last_node
     assert repr(root.left.right) == "Node(4)"
 
-    with pytest.raises(NodeValueError) as err:
-        # noinspection PyTypeChecker
-        Node("this_is_not_an_integer")
-    assert str(err.value) == "node value must be a float or int"
 
-    with pytest.raises(NodeTypeError) as err:
-        # noinspection PyTypeChecker
-        Node(1, "this_is_not_a_node")
-    assert str(err.value) == "left child must be a Node instance"
+def test_node_init_and_setattr_with_floats() -> None:
+    root = Node(1.5)
+    assert root.left is None
+    assert root.right is None
+    assert root.val == 1.5
+    assert root.value == 1.5
+    assert repr(root) == "Node(1.5)"
 
-    with pytest.raises(NodeTypeError) as err:
-        # noinspection PyTypeChecker
-        Node(1, Node(1), "this_is_not_a_node")
-    assert str(err.value) == "right child must be a Node instance"
+    root.value = 2.5
+    assert root.value == 2.5
+    assert root.val == 2.5
+    assert repr(root) == "Node(2.5)"
 
-    with pytest.raises(NodeValueError) as err:
-        root.val = "this_is_not_an_integer"
-    assert root.val == 1
-    assert str(err.value) == "node value must be a float or int"
+    root.val = 1.5
+    assert root.value == 1.5
+    assert root.val == 1.5
+    assert repr(root) == "Node(1.5)"
 
-    with pytest.raises(NodeValueError) as err:
-        root.value = "this_is_not_an_integer"
-    assert root.value == 1
-    assert str(err.value) == "node value must be a float or int"
-
-    with pytest.raises(NodeTypeError) as err:
-        root.left = "this_is_not_a_node"
+    left_child = Node(2.5)
+    root.left = left_child
     assert root.left is left_child
-    assert str(err.value) == "left child must be a Node instance"
+    assert root.right is None
+    assert root.val == 1.5
+    assert root.left.left is None
+    assert root.left.right is None
+    assert root.left.val == 2.5
+    assert repr(left_child) == "Node(2.5)"
 
-    with pytest.raises(NodeTypeError) as err:
-        root.right = "this_is_not_a_node"
+    right_child = Node(3.5)
+    root.right = right_child
+    assert root.left is left_child
     assert root.right is right_child
-    assert str(err.value) == "right child must be a Node instance"
+    assert root.val == 1.5
+    assert root.right.left is None
+    assert root.right.right is None
+    assert root.right.val == 3.5
+    assert repr(right_child) == "Node(3.5)"
+
+    last_node = Node(4.5)
+    left_child.right = last_node
+    assert root.left.right is last_node
+    assert repr(root.left.right) == "Node(4.5)"
 
 
-# noinspection PyTypeChecker
-def test_tree_equals():
+def test_node_init_and_setattr_with_letters() -> None:
+    root = Node("A")
+    assert root.left is None
+    assert root.right is None
+    assert root.val == "A"
+    assert root.value == "A"
+    assert repr(root) == "Node(A)"
+
+    root.value = "B"
+    assert root.value == "B"
+    assert root.val == "B"
+    assert repr(root) == "Node(B)"
+
+    root.val = "A"
+    assert root.value == "A"
+    assert root.val == "A"
+    assert repr(root) == "Node(A)"
+
+    left_child = Node("B")
+    root.left = left_child
+    assert root.left is left_child
+    assert root.right is None
+    assert root.val == "A"
+    assert root.left.left is None
+    assert root.left.right is None
+    assert root.left.val == "B"
+    assert repr(left_child) == "Node(B)"
+
+    right_child = Node("C")
+    root.right = right_child
+    assert root.left is left_child
+    assert root.right is right_child
+    assert root.val == "A"
+    assert root.right.left is None
+    assert root.right.right is None
+    assert root.right.val == "C"
+    assert repr(right_child) == "Node(C)"
+
+    last_node = Node("D")
+    left_child.right = last_node
+    assert root.left.right is last_node
+    assert repr(root.left.right) == "Node(D)"
+
+
+def test_node_init_and_setattr_error_cases() -> None:
+    root, left_child, right_child = Node(1), Node(2), Node(3)
+    root.left = left_child
+    root.right = right_child
+
+    with pytest.raises(NodeValueError) as err1:
+        Node(EMPTY_LIST)
+    assert str(err1.value) == "node value must be a float/int/str"
+
+    with pytest.raises(NodeValueError) as err2:
+        Node(1).val = EMPTY_LIST
+    assert str(err2.value) == "node value must be a float/int/str"
+
+    with pytest.raises(NodeTypeError) as err3:
+        Node(1, "this_is_not_a_node")  # type: ignore
+    assert str(err3.value) == "left child must be a Node instance"
+
+    with pytest.raises(NodeTypeError) as err4:
+        Node(1, Node(1), "this_is_not_a_node")  # type: ignore
+    assert str(err4.value) == "right child must be a Node instance"
+
+    with pytest.raises(NodeTypeError) as err5:
+        root.left = "this_is_not_a_node"  # type: ignore
+    assert root.left is left_child
+    assert str(err5.value) == "left child must be a Node instance"
+
+    with pytest.raises(NodeTypeError) as err6:
+        root.right = "this_is_not_a_node"  # type: ignore
+    assert root.right is right_child
+    assert str(err6.value) == "right child must be a Node instance"
+
+
+def test_tree_equals_with_integers() -> None:
     root1 = Node(1)
     root2 = Node(1)
-    assert root1.equals(None) is False
-    assert root1.equals(1) is False
+    assert root1.equals(None) is False  # type: ignore
+    assert root1.equals(1) is False  # type: ignore
     assert root1.equals(Node(2)) is False
     assert root1.equals(root2) is True
     assert root2.equals(root1) is True
@@ -189,33 +284,119 @@ def test_tree_equals():
     assert root2.equals(root1) is True
 
 
-def test_tree_clone():
+def test_tree_equals_with_floats() -> None:
+    root1 = Node(1.5)
+    root2 = Node(1.5)
+    assert root1.equals(None) is False  # type: ignore
+    assert root1.equals(1.5) is False  # type: ignore
+    assert root1.equals(Node(2.5)) is False
+    assert root1.equals(root2) is True
+    assert root2.equals(root1) is True
+
+    root1.left = Node(2.5)
+    assert root1.equals(root2) is False
+    assert root2.equals(root1) is False
+
+    root2.left = Node(2.5)
+    assert root1.equals(root2) is True
+    assert root2.equals(root1) is True
+
+    root1.right = Node(3.5)
+    assert root1.equals(root2) is False
+    assert root2.equals(root1) is False
+
+    root2.right = Node(3.5)
+    assert root1.equals(root2) is True
+    assert root2.equals(root1) is True
+
+    root1.right.left = Node(4.5)
+    assert root1.equals(root2) is False
+    assert root2.equals(root1) is False
+
+    root2.right.left = Node(4.5)
+    assert root1.equals(root2) is True
+    assert root2.equals(root1) is True
+
+
+def test_tree_equals_with_letters() -> None:
+    root1 = Node("A")
+    root2 = Node("A")
+    assert root1.equals(None) is False  # type: ignore
+    assert root1.equals("A") is False  # type: ignore
+    assert root1.equals(Node("B")) is False
+    assert root1.equals(root2) is True
+    assert root2.equals(root1) is True
+
+    root1.left = Node("B")
+    assert root1.equals(root2) is False
+    assert root2.equals(root1) is False
+
+    root2.left = Node("B")
+    assert root1.equals(root2) is True
+    assert root2.equals(root1) is True
+
+    root1.right = Node("C")
+    assert root1.equals(root2) is False
+    assert root2.equals(root1) is False
+
+    root2.right = Node("C")
+    assert root1.equals(root2) is True
+    assert root2.equals(root1) is True
+
+    root1.right.left = Node("D")
+    assert root1.equals(root2) is False
+    assert root2.equals(root1) is False
+
+    root2.right.left = Node("D")
+    assert root1.equals(root2) is True
+    assert root2.equals(root1) is True
+
+
+def test_tree_clone_with_numbers() -> None:
     for _ in range(REPETITIONS):
-        root = tree()
+        root = tree(letters=False)
+        assert root is not None
         clone = root.clone()
         assert root.values == clone.values
         assert root.equals(clone)
         assert clone.equals(root)
+        assert root.properties == clone.properties
 
 
-# noinspection PyUnresolvedReferences
-def test_list_representation():
-    root = build([])
+def test_tree_clone_with_letters() -> None:
+    for _ in range(REPETITIONS):
+        root = tree(letters=True)
+        assert root is not None
+        clone = root.clone()
+        assert root.values == clone.values
+        assert root.equals(clone)
+        assert clone.equals(root)
+        assert root.properties == clone.properties
+
+
+def test_list_representation_1() -> None:
+    root = build(EMPTY_LIST)
     assert root is None
 
     root = build([1])
+    assert root is not None
     assert root.val == 1
     assert root.left is None
     assert root.right is None
 
     root = build([1, 2])
+    assert root is not None
     assert root.val == 1
+    assert root.left is not None
     assert root.left.val == 2
     assert root.right is None
 
     root = build([1, 2, 3])
+    assert root is not None
     assert root.val == 1
+    assert root.left is not None
     assert root.left.val == 2
+    assert root.right is not None
     assert root.right.val == 3
     assert root.left.left is None
     assert root.left.right is None
@@ -223,10 +404,14 @@ def test_list_representation():
     assert root.right.right is None
 
     root = build([1, 2, 3, None, 4])
+    assert root is not None
     assert root.val == 1
+    assert root.left is not None
     assert root.left.val == 2
+    assert root.right is not None
     assert root.right.val == 3
     assert root.left.left is None
+    assert root.left.right is not None
     assert root.left.right.val == 4
     assert root.right.left is None
     assert root.right.right is None
@@ -264,28 +449,37 @@ def test_list_representation():
 
     for _ in range(REPETITIONS):
         t1 = tree()
+        assert t1 is not None
+
         t2 = build(t1.values)
+        assert t2 is not None
+
         assert t1.values == t2.values
 
 
-# noinspection PyUnresolvedReferences
-def test_list_representation2():
-    root = build2([])
+def test_list_representation_2() -> None:
+    root = build2(EMPTY_LIST)
     assert root is None
 
     root = build2([1])
+    assert root is not None
     assert root.val == 1
     assert root.left is None
     assert root.right is None
 
     root = build2([1, 2])
+    assert root is not None
     assert root.val == 1
+    assert root.left is not None
     assert root.left.val == 2
     assert root.right is None
 
     root = build2([1, 2, 3])
+    assert root is not None
     assert root.val == 1
+    assert root.left is not None
     assert root.left.val == 2
+    assert root.right is not None
     assert root.right.val == 3
     assert root.left.left is None
     assert root.left.right is None
@@ -293,10 +487,14 @@ def test_list_representation2():
     assert root.right.right is None
 
     root = build2([1, 2, 3, None, 4])
+    assert root is not None
     assert root.val == 1
+    assert root.left is not None
     assert root.left.val == 2
+    assert root.right is not None
     assert root.right.val == 3
     assert root.left.left is None
+    assert root.left.right is not None
     assert root.left.right.val == 4
     assert root.right.left is None
     assert root.right.right is None
@@ -304,18 +502,27 @@ def test_list_representation2():
     assert root.left.right.right is None
 
     root = build2([1, None, 2, 3, 4])
+    assert root is not None
     assert root.val == 1
     assert root.left is None
+    assert root.right is not None
     assert root.right.val == 2
+    assert root.right.left is not None
     assert root.right.left.val == 3
+    assert root.right.right is not None
     assert root.right.right.val == 4
 
     root = build2([2, 5, None, 3, None, 1, 4])
+    assert root is not None
     assert root.val == 2
+    assert root.left is not None
     assert root.left.val == 5
     assert root.right is None
+    assert root.left.left is not None
     assert root.left.left.val == 3
+    assert root.left.left.left is not None
     assert root.left.left.left.val == 1
+    assert root.left.left.right is not None
     assert root.left.left.right.val == 4
 
     with pytest.raises(NodeValueError):
@@ -352,11 +559,15 @@ def test_list_representation2():
 
     for _ in range(REPETITIONS):
         t1 = tree()
+        assert t1 is not None
+
         t2 = build2(t1.values2)
+        assert t2 is not None
+
         assert t1.values2 == t2.values2
 
 
-def test_tree_get_node():
+def test_tree_get_node_by_level_order_index() -> None:
     root = Node(1)
     root.left = Node(2)
     root.right = Node(3)
@@ -372,16 +583,16 @@ def test_tree_get_node():
     assert root[9] is root.left.right.left
 
     for index in [5, 6, 7, 8, 10]:
-        with pytest.raises(NodeNotFoundError) as err:
+        with pytest.raises(NodeNotFoundError) as err1:
             assert root[index]
-        assert str(err.value) == "node missing at index {}".format(index)
+        assert str(err1.value) == "node missing at index {}".format(index)
 
-    with pytest.raises(NodeIndexError) as err:
+    with pytest.raises(NodeIndexError) as err2:
         assert root[-1]
-    assert str(err.value) == "node index must be a non-negative int"
+    assert str(err2.value) == "node index must be a non-negative int"
 
 
-def test_tree_set_node():
+def test_tree_set_node_by_level_order_index() -> None:
     root = Node(1)
     root.left = Node(2)
     root.right = Node(3)
@@ -393,17 +604,17 @@ def test_tree_set_node():
     new_node_2 = Node(8)
     new_node_3 = Node(9)
 
-    with pytest.raises(NodeModifyError) as err:
+    with pytest.raises(NodeModifyError) as err1:
         root[0] = new_node_1
-    assert str(err.value) == "cannot modify the root node"
+    assert str(err1.value) == "cannot modify the root node"
 
-    with pytest.raises(NodeIndexError) as err:
+    with pytest.raises(NodeIndexError) as err2:
         root[-1] = new_node_1
-    assert str(err.value) == "node index must be a non-negative int"
+    assert str(err2.value) == "node index must be a non-negative int"
 
-    with pytest.raises(NodeNotFoundError) as err:
+    with pytest.raises(NodeNotFoundError) as err3:
         root[100] = new_node_1
-    assert str(err.value) == "parent node missing at index 49"
+    assert str(err3.value) == "parent node missing at index 49"
 
     root[10] = new_node_1
     assert root.val == 1
@@ -429,7 +640,7 @@ def test_tree_set_node():
     assert root.right is new_node_2
 
 
-def test_tree_del_node():
+def test_tree_delete_node_by_level_order_index() -> None:
     root = Node(1)
     root.left = Node(2)
     root.right = Node(3)
@@ -437,21 +648,21 @@ def test_tree_del_node():
     root.left.right = Node(5)
     root.left.right.left = Node(6)
 
-    with pytest.raises(NodeModifyError) as err:
+    with pytest.raises(NodeModifyError) as err1:
         del root[0]
-    assert str(err.value) == "cannot delete the root node"
+    assert str(err1.value) == "cannot delete the root node"
 
-    with pytest.raises(NodeIndexError) as err:
+    with pytest.raises(NodeIndexError) as err2:
         del root[-1]
-    assert str(err.value) == "node index must be a non-negative int"
+    assert str(err2.value) == "node index must be a non-negative int"
 
-    with pytest.raises(NodeNotFoundError) as err:
+    with pytest.raises(NodeNotFoundError) as err3:
         del root[10]
-    assert str(err.value) == "no node to delete at index 10"
+    assert str(err3.value) == "no node to delete at index 10"
 
-    with pytest.raises(NodeNotFoundError) as err:
+    with pytest.raises(NodeNotFoundError) as err4:
         del root[100]
-    assert str(err.value) == "no node to delete at index 100"
+    assert str(err4.value) == "no node to delete at index 100"
 
     del root[3]
     assert root.left.left is None
@@ -489,7 +700,7 @@ def test_tree_del_node():
     assert root.size == 1
 
 
-def test_tree_print_no_index():
+def test_tree_print_with_integers_no_index() -> None:
     for printer in [builtin_print, pprint_default]:
         lines = printer([1])
         assert lines == ["1"]
@@ -521,7 +732,7 @@ def test_tree_print_no_index():
         ]
 
 
-def test_tree_print_with_index():
+def test_tree_print_with_integers_with_index() -> None:
     lines = pprint_with_index([1])
     assert lines == ["0:1"]
     lines = pprint_with_index([1, 2])
@@ -564,9 +775,84 @@ def test_tree_print_with_index():
     ]
 
 
-def test_tree_validate():
+def test_tree_print_with_letters_no_index() -> None:
+    for printer in [builtin_print, pprint_default]:
+        lines = printer(["A"])
+        assert lines == ["A"]
+        lines = printer(["A", "B"])
+        assert lines == ["  A", " /", "B"]
+        lines = printer(["A", None, "C"])
+        assert lines == ["A", " \\", "  C"]
+        lines = printer(["A", "B", "C"])
+        assert lines == ["  A", " / \\", "B   C"]
+        lines = printer(["A", "B", "C", None, "E"])
+        assert lines == ["  __A", " /   \\", "B     C", " \\", "  E"]
+        lines = printer(["A", "B", "C", None, "E", "F"])
+        assert lines == ["  __A__", " /     \\", "B       C", " \\     /", "  E   F"]
+        lines = printer(["A", "B", "C", None, "E", "F", "G"])
+        assert lines == [
+            "  __A__",
+            " /     \\",
+            "B       C",
+            " \\     / \\",
+            "  E   F   G",
+        ]
+        lines = printer(["A", "B", "C", "D", "E", "F", "G"])
+        assert lines == [
+            "    __A__",
+            "   /     \\",
+            "  B       C",
+            " / \\     / \\",
+            "D   E   F   G",
+        ]
+
+
+def test_tree_print_with_letters_with_index() -> None:
+    lines = pprint_with_index(["A"])
+    assert lines == ["0:A"]
+    lines = pprint_with_index(["A", "B"])
+    assert lines == ["   _0:A", "  /", "1:B"]
+    lines = pprint_with_index(["A", None, "C"])
+    assert lines == ["0:A_", "    \\", "    2:C"]
+    lines = pprint_with_index(["A", "B", "C"])
+    assert lines == ["   _0:A_", "  /     \\", "1:B     2:C"]
+    lines = pprint_with_index(["A", "B", "C", None, "E"])
+    assert lines == [
+        "   _____0:A_",
+        "  /         \\",
+        "1:B_        2:C",
+        "    \\",
+        "    4:E",
+    ]
+    lines = pprint_with_index(["A", "B", "C", None, "E", "F"])
+    assert lines == [
+        "   _____0:A_____",
+        "  /             \\",
+        "1:B_           _2:C",
+        "    \\         /",
+        "    4:E     5:F",
+    ]
+    lines = pprint_with_index(["A", "B", "C", None, "E", "F", "G"])
+    assert lines == [
+        "   _____0:A_____",
+        "  /             \\",
+        "1:B_           _2:C_",
+        "    \\         /     \\",
+        "    4:E     5:F     6:G",
+    ]
+    lines = pprint_with_index(["A", "B", "C", "D", "E", "F", "G"])
+    assert lines == [
+        "       _____0:A_____",
+        "      /             \\",
+        "   _1:B_           _2:C_",
+        "  /     \\         /     \\",
+        "3:D     4:E     5:F     6:G",
+    ]
+
+
+def test_tree_validate() -> None:
     class TestNode(Node):
-        def __setattr__(self, attr, value):
+        def __setattr__(self, attr: str, value: Any) -> None:
             object.__setattr__(self, attr, value)
 
     root = Node(1)
@@ -590,27 +876,73 @@ def test_tree_validate():
     root.validate()  # Should pass
 
     root = TestNode(1)
-    root.left = "not_a_node"
-    with pytest.raises(NodeTypeError) as err:
+    root.left = "not_a_node"  # type: ignore
+    with pytest.raises(NodeTypeError) as err1:
         root.validate()
-    assert str(err.value) == "invalid node instance at index 1"
+    assert str(err1.value) == "invalid node instance at index 1"
 
     root = TestNode(1)
     root.right = TestNode(2)
-    root.right.val = "not_an_integer"
-    with pytest.raises(NodeValueError) as err:
+    root.right.val = EMPTY_LIST
+    with pytest.raises(NodeValueError) as err2:
         root.validate()
-    assert str(err.value) == "invalid node value at index 2"
+    assert str(err2.value) == "invalid node value at index 2"
 
     root = TestNode(1)
     root.left = TestNode(2)
     root.left.right = root
-    with pytest.raises(NodeReferenceError) as err:
+    with pytest.raises(NodeReferenceError) as err3:
         root.validate()
-    assert str(err.value) == "cyclic reference at Node(1) (level-order index 4)"
+    assert str(err3.value) == "cyclic reference at Node(1) (level-order index 4)"
 
 
-def test_tree_properties():
+def test_tree_validate_with_letters() -> None:
+    class TestNode(Node):
+        def __setattr__(self, attr: str, value: Any) -> None:
+            object.__setattr__(self, attr, value)
+
+    root = Node("A")
+    root.validate()  # Should pass
+
+    root = Node("A")
+    root.left = Node("B")
+    root.validate()  # Should pass
+
+    root = Node("A")
+    root.left = Node("B")
+    root.right = Node(3)
+    root.validate()  # Should pass
+
+    root = Node("A")
+    root.left = Node("B")
+    root.right = Node(3)
+    root.left.left = Node(4)
+    root.left.right = Node(5)
+    root.left.right.left = Node(6)
+    root.validate()  # Should pass
+
+    root = TestNode("A")
+    root.left = "not_a_node"  # type: ignore
+    with pytest.raises(NodeTypeError) as err1:
+        root.validate()
+    assert str(err1.value) == "invalid node instance at index 1"
+
+    root = TestNode("A")
+    root.right = TestNode("B")
+    root.right.val = EMPTY_LIST
+    with pytest.raises(NodeValueError) as err2:
+        root.validate()
+    assert str(err2.value) == "invalid node value at index 2"
+
+    root = TestNode("A")
+    root.left = TestNode("B")
+    root.left.right = root
+    with pytest.raises(NodeReferenceError) as err3:
+        root.validate()
+    assert str(err3.value) == "cyclic reference at Node(A) (level-order index 4)"
+
+
+def test_tree_properties() -> None:
     root = Node(1)
     assert root.properties == {
         "height": 0,
@@ -850,7 +1182,7 @@ def test_tree_properties():
     assert root.size == len(root) == 7
 
 
-def test_tree_traversal():
+def test_tree_traversal() -> None:
     n1 = Node(1)
     assert n1.levels == [[n1]]
     assert n1.leaves == [n1]
@@ -890,13 +1222,15 @@ def test_tree_traversal():
     assert n1.levelorder == [n1, n2, n3, n4, n5]
 
 
-def test_tree_generation():
+def test_tree_generation() -> None:
     for invalid_height in ["foo", -1, None]:
         with pytest.raises(TreeHeightError) as err:
-            tree(height=invalid_height)
+            tree(height=invalid_height)  # type: ignore
         assert str(err.value) == "height must be an int between 0 - 9"
 
     root = tree(height=0)
+    assert root is not None
+
     root.validate()
     assert root.height == 0
     assert root.left is None
@@ -905,13 +1239,19 @@ def test_tree_generation():
 
     for _ in range(REPETITIONS):
         random_height = random.randint(1, 9)
+
         root = tree(random_height)
+        assert root is not None
+
         root.validate()
         assert root.height == random_height
 
     for _ in range(REPETITIONS):
         random_height = random.randint(1, 9)
+
         root = tree(random_height, is_perfect=True)
+        assert root is not None
+
         root.validate()
         assert root.height == random_height
         assert root.is_perfect is True
@@ -919,13 +1259,14 @@ def test_tree_generation():
         assert root.is_strict is True
 
 
-def test_bst_generation():
+def test_bst_generation() -> None:
     for invalid_height in ["foo", -1, None]:
         with pytest.raises(TreeHeightError) as err:
-            bst(height=invalid_height)
+            bst(height=invalid_height)  # type: ignore
         assert str(err.value) == "height must be an int between 0 - 9"
 
     root = bst(height=0)
+    assert root is not None
     root.validate()
     assert root.height == 0
     assert root.left is None
@@ -935,6 +1276,15 @@ def test_bst_generation():
     for _ in range(REPETITIONS):
         random_height = random.randint(1, 9)
         root = bst(random_height)
+        assert root is not None
+        root.validate()
+        assert root.is_bst is True
+        assert root.height == random_height
+
+    for _ in range(REPETITIONS):
+        random_height = random.randint(1, 9)
+        root = bst(random_height, letters=True)
+        assert root is not None
         root.validate()
         assert root.is_bst is True
         assert root.height == random_height
@@ -942,11 +1292,26 @@ def test_bst_generation():
     for _ in range(REPETITIONS):
         random_height = random.randint(1, 9)
         root = bst(random_height, is_perfect=True)
+        assert root is not None
         root.validate()
         assert root.height == random_height
 
         if not root.is_bst:
-            print(root)
+            raise Exception("boo")
+
+        assert root.is_bst is True
+        assert root.is_perfect is True
+        assert root.is_balanced is True
+        assert root.is_strict is True
+
+    for _ in range(REPETITIONS):
+        random_height = random.randint(1, 9)
+        root = bst(random_height, letters=True, is_perfect=True)
+        assert root is not None
+        root.validate()
+        assert root.height == random_height
+
+        if not root.is_bst:
             raise Exception("boo")
 
         assert root.is_bst is True
@@ -955,13 +1320,14 @@ def test_bst_generation():
         assert root.is_strict is True
 
 
-def test_heap_generation():
+def test_heap_generation() -> None:
     for invalid_height in ["foo", -1, None]:
         with pytest.raises(TreeHeightError) as err:
-            heap(height=invalid_height)
+            heap(height=invalid_height)  # type: ignore
         assert str(err.value) == "height must be an int between 0 - 9"
 
     root = heap(height=0)
+    assert root is not None
     root.validate()
     assert root.height == 0
     assert root.left is None
@@ -971,6 +1337,16 @@ def test_heap_generation():
     for _ in range(REPETITIONS):
         random_height = random.randint(1, 9)
         root = heap(random_height, is_max=True)
+        assert root is not None
+        root.validate()
+        assert root.is_max_heap is True
+        assert root.is_min_heap is False
+        assert root.height == random_height
+
+    for _ in range(REPETITIONS):
+        random_height = random.randint(1, 9)
+        root = heap(random_height, letters=True, is_max=True)
+        assert root is not None
         root.validate()
         assert root.is_max_heap is True
         assert root.is_min_heap is False
@@ -979,6 +1355,16 @@ def test_heap_generation():
     for _ in range(REPETITIONS):
         random_height = random.randint(1, 9)
         root = heap(random_height, is_max=False)
+        assert root is not None
+        root.validate()
+        assert root.is_max_heap is False
+        assert root.is_min_heap is True
+        assert root.height == random_height
+
+    for _ in range(REPETITIONS):
+        random_height = random.randint(1, 9)
+        root = heap(random_height, letters=True, is_max=False)
+        assert root is not None
         root.validate()
         assert root.is_max_heap is False
         assert root.is_min_heap is True
@@ -987,6 +1373,19 @@ def test_heap_generation():
     for _ in range(REPETITIONS):
         random_height = random.randint(1, 9)
         root = heap(random_height, is_perfect=True)
+        assert root is not None
+        root.validate()
+        assert root.is_max_heap is True
+        assert root.is_min_heap is False
+        assert root.is_perfect is True
+        assert root.is_balanced is True
+        assert root.is_strict is True
+        assert root.height == random_height
+
+    for _ in range(REPETITIONS):
+        random_height = random.randint(1, 9)
+        root = heap(random_height, letters=True, is_perfect=True)
+        assert root is not None
         root.validate()
         assert root.is_max_heap is True
         assert root.is_min_heap is False
@@ -996,7 +1395,7 @@ def test_heap_generation():
         assert root.height == random_height
 
 
-def test_heap_float_values():
+def test_heap_float_values() -> None:
     root = Node(1.0)
     root.left = Node(0.5)
     root.right = Node(1.5)
@@ -1034,9 +1433,11 @@ def test_heap_float_values():
             "    5.0",
         ]
 
+
+def test_heap_float_values_builders() -> None:
     for builder in [tree, bst, heap]:
         for _ in range(REPETITIONS):
-            root = builder()
+            root = builder()  # type: ignore
             root_copy = copy.deepcopy(root)
 
             for node in root:
@@ -1059,7 +1460,7 @@ def test_heap_float_values():
             assert root.size == root_copy.size
 
 
-def test_get_index():
+def test_get_index_utility_function() -> None:
     root = Node(0)
     root.left = Node(1)
     root.right = Node(2)
@@ -1072,23 +1473,20 @@ def test_get_index():
     assert get_index(root, root.left.left) == 3
     assert get_index(root, root.right.right) == 6
 
-    with pytest.raises(NodeReferenceError) as err:
+    with pytest.raises(NodeReferenceError) as err1:
         get_index(root.left, root.right)
-    assert str(err.value) == "given nodes are not in the same tree"
+    assert str(err1.value) == "given nodes are not in the same tree"
 
-    with pytest.raises(NodeTypeError) as err:
-        # noinspection PyTypeChecker
-        get_index(root, None)
-    assert str(err.value) == "descendent must be a Node instance"
+    with pytest.raises(NodeTypeError) as err2:
+        get_index(root, None)  # type: ignore
+    assert str(err2.value) == "descendent must be a Node instance"
 
-    with pytest.raises(NodeTypeError) as err:
-        # noinspection PyTypeChecker
-        get_index(None, root.left)
-    assert str(err.value) == "root must be a Node instance"
+    with pytest.raises(NodeTypeError) as err3:
+        get_index(None, root.left)  # type: ignore
+    assert str(err3.value) == "root must be a Node instance"
 
 
-# noinspection PyTypeChecker
-def test_get_parent():
+def test_get_parent_utility_function() -> None:
     root = Node(0)
     root.left = Node(1)
     root.right = Node(2)
@@ -1105,7 +1503,7 @@ def test_get_parent():
     assert get_parent(root, None) is None
 
 
-def test_svg_generation():
+def test_svg_generation() -> None:
     root = Node(0)
     assert root.svg() == EXPECTED_SVG_XML_SINGLE_NODE
 
@@ -1114,3 +1512,24 @@ def test_svg_generation():
     root.left.left = Node(3)
     root.right.right = Node(4)
     assert root.svg() == EXPECTED_SVG_XML_MULTIPLE_NODES
+
+
+def test_number_to_letters_utility_function() -> None:
+    with pytest.raises(AssertionError):
+        number_to_letters(-1)
+
+    assert number_to_letters(0) == "A"
+    assert number_to_letters(1) == "B"
+    assert number_to_letters(25) == "Z"
+    assert number_to_letters(26) == "ZA"
+    assert number_to_letters(51) == "ZZ"
+    assert number_to_letters(52) == "ZZA"
+
+    for _ in range(REPETITIONS):
+        num1 = random.randint(0, 1000)
+        num2 = random.randint(0, 1000)
+        str1 = number_to_letters(num1)
+        str2 = number_to_letters(num2)
+        assert (num1 < num2) == (str1 < str2)
+        assert (num1 > num2) == (str1 > str2)
+        assert (num1 == num2) == (str1 == str2)

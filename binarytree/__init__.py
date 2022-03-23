@@ -7,7 +7,10 @@ __all__ = [
     "build2",
     "get_index",
     "get_parent",
+    "number_to_letters",
     "__version__",
+    "NodeValue",
+    "NodeValueList",
 ]
 
 import heapq
@@ -17,7 +20,8 @@ from dataclasses import dataclass
 from subprocess import SubprocessError
 from typing import Any, Deque, Dict, Iterator, List, Optional, Tuple, Union
 
-from graphviz import Digraph, ExecutableNotFound, nohtml
+from graphviz import Digraph, nohtml
+from graphviz.exceptions import ExecutableNotFound
 from pkg_resources import get_distribution
 
 from binarytree.exceptions import (
@@ -55,8 +59,16 @@ _SVG_XML_TEMPLATE = """
 </g>
 </svg>
 """
-
-NodeValue = Union[float, int]
+_NODE_VAL_TYPES = (float, int, str)
+NodeValue = Any  # Union[float, int, str]
+NodeValueList = Union[
+    List[Optional[float]],
+    List[Optional[int]],
+    List[Optional[str]],
+    List[float],
+    List[int],
+    List[str],
+]
 
 
 @dataclass
@@ -83,15 +95,15 @@ class Node:
     this class mentions "binary tree", it is referring to the current node and
     its descendants.
 
-    :param value: Node value (must be a number).
-    :type value: int | float
+    :param value: Node value (must be a float/int/str).
+    :type value: float | int | str
     :param left: Left child node (default: None).
     :type left: binarytree.Node | None
     :param right: Right child node (default: None).
     :type right: binarytree.Node | None
     :raise binarytree.exceptions.NodeTypeError: If left or right child node is
         not an instance of :class:`binarytree.Node`.
-    :raise binarytree.exceptions.NodeValueError: If node value is not an int or float.
+    :raise binarytree.exceptions.NodeValueError: If node value is invalid.
     """
 
     def __init__(
@@ -168,8 +180,7 @@ class Node:
         :type obj: object
         :raise binarytree.exceptions.NodeTypeError: If left or right child is
             not an instance of :class:`binarytree.Node`.
-        :raise binarytree.exceptions.NodeValueError: If node value is not a
-            number (e.g. int, float).
+        :raise binarytree.exceptions.NodeValueError: If node value is invalid.
 
         **Example**:
 
@@ -178,20 +189,20 @@ class Node:
             >>> from binarytree import Node
             >>>
             >>> node = Node(1)
-            >>> node.left = 'invalid'  # doctest: +IGNORE_EXCEPTION_DETAIL
+            >>> node.left = []  # doctest: +IGNORE_EXCEPTION_DETAIL
             Traceback (most recent call last):
              ...
-            NodeTypeError: Left child must be a Node instance
+            binarytree.exceptions.NodeTypeError: Left child must be a Node instance
 
         .. doctest::
 
             >>> from binarytree import Node
             >>>
             >>> node = Node(1)
-            >>> node.val = 'invalid'  # doctest: +IGNORE_EXCEPTION_DETAIL
+            >>> node.val = [] # doctest: +IGNORE_EXCEPTION_DETAIL
             Traceback (most recent call last):
              ...
-            NodeValueError: node value must be a float or int
+            binarytree.exceptions.NodeValueError: node value must be a float/int/str
         """
         if attr == _ATTR_LEFT:
             if obj is not None and not isinstance(obj, Node):
@@ -202,13 +213,13 @@ class Node:
                 raise NodeTypeError("right child must be a Node instance")
 
         elif attr == _ATTR_VALUE:
-            if not isinstance(obj, (float, int)):
-                raise NodeValueError("node value must be a float or int")
+            if not isinstance(obj, _NODE_VAL_TYPES):
+                raise NodeValueError("node value must be a float/int/str")
             object.__setattr__(self, _ATTR_VAL, obj)
 
         elif attr == _ATTR_VAL:
-            if not isinstance(obj, (float, int)):
-                raise NodeValueError("node value must be a float or int")
+            if not isinstance(obj, _NODE_VAL_TYPES):
+                raise NodeValueError("node value must be a float/int/str")
             object.__setattr__(self, _ATTR_VALUE, obj)
 
         object.__setattr__(self, attr, obj)
@@ -316,7 +327,7 @@ class Node:
             >>> root[3]  # doctest: +IGNORE_EXCEPTION_DETAIL
             Traceback (most recent call last):
              ...
-            NodeNotFoundError: node missing at index 3
+            binarytree.exceptions.NodeNotFoundError: node missing at index 3
         """
         if not isinstance(index, int) or index < 0:
             raise NodeIndexError("node index must be a non-negative int")
@@ -383,7 +394,7 @@ class Node:
             >>> root[0] = Node(4)  # doctest: +IGNORE_EXCEPTION_DETAIL
             Traceback (most recent call last):
              ...
-            NodeModifyError: cannot modify the root node
+            binarytree.exceptions.NodeModifyError: cannot modify the root node
 
         .. doctest::
 
@@ -396,7 +407,7 @@ class Node:
             >>> root[11] = Node(4)  # doctest: +IGNORE_EXCEPTION_DETAIL
             Traceback (most recent call last):
              ...
-            NodeNotFoundError: parent node missing at index 5
+            binarytree.exceptions.NodeNotFoundError: parent node missing at index 5
 
         .. doctest::
 
@@ -454,7 +465,7 @@ class Node:
             >>> del root[0]  # doctest: +IGNORE_EXCEPTION_DETAIL
             Traceback (most recent call last):
              ...
-            NodeModifyError: cannot delete the root node
+            binarytree.exceptions.NodeModifyError: cannot delete the root node
 
         .. doctest::
 
@@ -469,7 +480,7 @@ class Node:
             >>> root[2]  # doctest: +IGNORE_EXCEPTION_DETAIL
             Traceback (most recent call last):
              ...
-            NodeNotFoundError: node missing at index 2
+            binarytree.exceptions.NodeNotFoundError: node missing at index 2
         """
         if index == 0:
             raise NodeModifyError("cannot delete the root node")
@@ -571,7 +582,7 @@ class Node:
         """Return a graphviz.Digraph_ object representing the binary tree.
 
         This method's positional and keyword arguments are passed directly into the
-        the Digraph's **__init__** method.
+        Digraph's **__init__** method.
 
         :return: graphviz.Digraph_ object representing the binary tree.
         :raise binarytree.exceptions.GraphvizImportError: If graphviz is not installed
@@ -666,8 +677,7 @@ class Node:
             cyclic reference to a node in the binary tree.
         :raise binarytree.exceptions.NodeTypeError: If a node is not an
             instance of :class:`binarytree.Node`.
-        :raise binarytree.exceptions.NodeValueError: If a node value is not a
-            number (e.g. int, float).
+        :raise binarytree.exceptions.NodeValueError: If node value is invalid.
 
         **Example**:
 
@@ -682,7 +692,7 @@ class Node:
             >>> root.validate()  # doctest: +IGNORE_EXCEPTION_DETAIL
             Traceback (most recent call last):
              ...
-            NodeReferenceError: cyclic node reference at index 0
+            binarytree.exceptions.NodeReferenceError: cyclic node reference at index 0
         """
         has_more_nodes = True
         nodes_seen = set()
@@ -708,11 +718,11 @@ class Node:
                         raise NodeTypeError(
                             "invalid node instance at index {}".format(node_index)
                         )
-                    if not isinstance(node.val, (float, int)):
+                    if not isinstance(node.val, _NODE_VAL_TYPES):
                         raise NodeValueError(
                             "invalid node value at index {}".format(node_index)
                         )
-                    if not isinstance(node.value, (float, int)):  # pragma: no cover
+                    if not isinstance(node.value, _NODE_VAL_TYPES):  # pragma: no cover
                         raise NodeValueError(
                             "invalid node value at index {}".format(node_index)
                         )
@@ -732,7 +742,7 @@ class Node:
 
         :param other: Root of the other binary tree.
         :type other: binarytree.Node
-        :return: True if the binary trees a equal, False otherwise.
+        :return: True if the binary trees are equal, False otherwise.
         :rtype: bool
         """
         stack1: List[Optional[Node]] = [self]
@@ -1812,7 +1822,7 @@ def _build_bst_from_sorted_values(sorted_values: List[int]) -> Optional[Node]:
     """Recursively build a perfect BST from odd number of sorted values.
 
     :param sorted_values: Odd number of sorted values.
-    :type sorted_values: [int | float]
+    :type sorted_values: [float | int | str]
     :return: Root node of the BST.
     :rtype: binarytree.Node | None
     """
@@ -1842,8 +1852,21 @@ def _generate_random_leaf_count(height: int) -> int:
     return roll_1 + roll_2 or half_leaf_count
 
 
-def _generate_random_node_values(height: int) -> List[NodeValue]:
-    """Return random node values for building binary trees.
+def number_to_letters(number: int) -> str:
+    """Convert a positive integer to a string of uppercase letters.
+
+    :param number: A positive integer.
+    :type number: int
+    :return: String of uppercase letters.
+    :rtype: str
+    """
+    assert number >= 0, "number must be a positive integer"
+    quotient, remainder = divmod(number, 26)
+    return quotient * "Z" + chr(65 + remainder)
+
+
+def _generate_random_numbers(height: int) -> List[int]:
+    """Return random numbers for building binary trees.
 
     :param height: Height of the binary tree.
     :type height: int
@@ -1851,7 +1874,7 @@ def _generate_random_node_values(height: int) -> List[NodeValue]:
     :rtype: [int]
     """
     max_node_count = 2 ** (height + 1) - 1
-    node_values: List[NodeValue] = list(range(max_node_count))
+    node_values = list(range(max_node_count))
     random.shuffle(node_values)
     return node_values
 
@@ -2060,7 +2083,7 @@ def get_index(root: Node, descendent: Node) -> int:
         >>> get_index(root.left, root.right)
         Traceback (most recent call last):
          ...
-        NodeReferenceError: given nodes are not in the same tree
+        binarytree.exceptions.NodeReferenceError: given nodes are not in the same tree
     """
     if root is None:
         raise NodeTypeError("root must be a Node instance")
@@ -2096,13 +2119,13 @@ def get_index(root: Node, descendent: Node) -> int:
     raise NodeReferenceError("given nodes are not in the same tree")
 
 
-def get_parent(root: Node, child: Node) -> Optional[Node]:
+def get_parent(root: Optional[Node], child: Optional[Node]) -> Optional[Node]:
     """Search the binary tree and return the parent of given child.
 
     :param root: Root node of the binary tree.
-    :type: binarytree.Node
+    :type: binarytree.Node | None
     :param child: Child node.
-    :rtype: binarytree.Node
+    :rtype: binarytree.Node | None
     :return: Parent node, or None if missing.
     :rtype: binarytree.Node | None
 
@@ -2148,7 +2171,7 @@ def get_parent(root: Node, child: Node) -> Optional[Node]:
     return None
 
 
-def build(values: List[NodeValue]) -> Optional[Node]:
+def build(values: NodeValueList) -> Optional[Node]:
     """Build a tree from `list representation`_ and return its root node.
 
     .. _list representation:
@@ -2159,7 +2182,7 @@ def build(values: List[NodeValue]) -> Optional[Node]:
         node). If a node is at index i, its left child is always at 2i + 1,
         right child at 2i + 2, and parent at floor((i - 1) / 2). "None" indicates
         absence of a node at that index. See example below for an illustration.
-    :type values: [int | float | None]
+    :type values: [float | int | str | None]
     :return: Root node of the binary tree.
     :rtype: binarytree.Node | None
     :raise binarytree.exceptions.NodeNotFoundError: If the list representation
@@ -2189,7 +2212,7 @@ def build(values: List[NodeValue]) -> Optional[Node]:
         >>> root = build([None, 2, 3])  # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
          ...
-        NodeNotFoundError: parent node missing at index 0
+        binarytree.exceptions.NodeNotFoundError: parent node missing at index 0
     """
     nodes = [None if v is None else Node(v) for v in values]
 
@@ -2218,7 +2241,7 @@ def build2(values: List[NodeValue]) -> Optional[Node]:
         parent at floor((i - 1) / 2), but it allows for more compact lists as it
         does not hold "None"s between nodes in each level. See example below for an
         illustration.
-    :type values: [int | float | None]
+    :type values: [float | int | str | None]
     :return: Root node of the binary tree.
     :rtype: binarytree.Node | None
     :raise binarytree.exceptions.NodeNotFoundError: If the list representation
@@ -2250,7 +2273,7 @@ def build2(values: List[NodeValue]) -> Optional[Node]:
         >>> root = build2([None, 1, 2])  # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
          ...
-        NodeValueError: node value must be a float or int
+        binarytree.exceptions.NodeValueError: node value must be a float/int/str
     """
     queue: Deque[Node] = deque()
     root: Optional[Node] = None
@@ -2276,7 +2299,11 @@ def build2(values: List[NodeValue]) -> Optional[Node]:
     return root
 
 
-def tree(height: int = 3, is_perfect: bool = False) -> Optional[Node]:
+def tree(
+    height: int = 3,
+    is_perfect: bool = False,
+    letters: bool = False,
+) -> Optional[Node]:
     """Generate a random binary tree and return its root node.
 
     :param height: Height of the tree (default: 3, range: 0 - 9 inclusive).
@@ -2285,6 +2312,9 @@ def tree(height: int = 3, is_perfect: bool = False) -> Optional[Node]:
         with all levels filled is returned. If set to False, a perfect binary
         tree may still be generated by chance.
     :type is_perfect: bool
+    :param letters: If set to True (default: False), uppercase alphabet letters are
+        used for node values instead of numbers.
+    :type letters: bool
     :return: Root node of the binary tree.
     :rtype: binarytree.Node
     :raise binarytree.exceptions.TreeHeightError: If height is invalid.
@@ -2318,10 +2348,14 @@ def tree(height: int = 3, is_perfect: bool = False) -> Optional[Node]:
         >>> root = tree(height=20)  # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
          ...
-        TreeHeightError: height must be an int between 0 - 9
+        binarytree.exceptions.TreeHeightError: height must be an int between 0 - 9
     """
     _validate_tree_height(height)
-    values = _generate_random_node_values(height)
+    numbers = _generate_random_numbers(height)
+    values: NodeValueList = (
+        list(map(number_to_letters, numbers)) if letters else numbers
+    )
+
     if is_perfect:
         return build(values)
 
@@ -2350,7 +2384,11 @@ def tree(height: int = 3, is_perfect: bool = False) -> Optional[Node]:
     return root_node
 
 
-def bst(height: int = 3, is_perfect: bool = False) -> Optional[Node]:
+def bst(
+    height: int = 3,
+    is_perfect: bool = False,
+    letters: bool = False,
+) -> Optional[Node]:
     """Generate a random BST (binary search tree) and return its root node.
 
     :param height: Height of the BST (default: 3, range: 0 - 9 inclusive).
@@ -2359,6 +2397,9 @@ def bst(height: int = 3, is_perfect: bool = False) -> Optional[Node]:
         levels filled is returned. If set to False, a perfect BST may still be
         generated by chance.
     :type is_perfect: bool
+    :param letters: If set to True (default: False), uppercase alphabet letters are
+        used for node values instead of numbers.
+    :type letters: bool
     :return: Root node of the BST.
     :rtype: binarytree.Node
     :raise binarytree.exceptions.TreeHeightError: If height is invalid.
@@ -2383,13 +2424,16 @@ def bst(height: int = 3, is_perfect: bool = False) -> Optional[Node]:
         >>> root = bst(10)  # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
          ...
-        TreeHeightError: height must be an int between 0 - 9
+        binarytree.exceptions.TreeHeightError: height must be an int between 0 - 9
     """
     _validate_tree_height(height)
     if is_perfect:
         return _generate_perfect_bst(height)
 
-    values = _generate_random_node_values(height)
+    numbers = _generate_random_numbers(height)
+    values: NodeValueList = (
+        list(map(number_to_letters, numbers)) if letters else numbers
+    )
     leaf_count = _generate_random_leaf_count(height)
 
     root_node = Node(values.pop(0))
@@ -2417,7 +2461,10 @@ def bst(height: int = 3, is_perfect: bool = False) -> Optional[Node]:
 
 
 def heap(
-    height: int = 3, is_max: bool = True, is_perfect: bool = False
+    height: int = 3,
+    is_max: bool = True,
+    is_perfect: bool = False,
+    letters: bool = False,
 ) -> Optional[Node]:
     """Generate a random heap and return its root node.
 
@@ -2431,6 +2478,9 @@ def heap(
         levels filled is returned. If set to False, a perfect heap may still be
         generated by chance.
     :type is_perfect: bool
+    :param letters: If set to True (default: False), uppercase alphabet letters are
+        used for node values instead of numbers.
+    :type letters: bool
     :return: Root node of the heap.
     :rtype: binarytree.Node
     :raise binarytree.exceptions.TreeHeightError: If height is invalid.
@@ -2479,20 +2529,21 @@ def heap(
         >>> root = heap(-1)  # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
          ...
-        TreeHeightError: height must be an int between 0 - 9
+        binarytree.exceptions.TreeHeightError: height must be an int between 0 - 9
     """
     _validate_tree_height(height)
-    values = _generate_random_node_values(height)
+    values = _generate_random_numbers(height)
 
     if not is_perfect:
-        # Randomly cut some of the leaf nodes away
+        # Randomly cut some leaf nodes away
         random_cut = random.randint(2**height, len(values))
         values = values[:random_cut]
 
     if is_max:
         negated = [-v for v in values]
         heapq.heapify(negated)
-        return build([-v for v in negated])
+        values = [-v for v in negated]
     else:
         heapq.heapify(values)
-        return build(values)
+
+    return build(list(map(number_to_letters, values)) if letters else values)

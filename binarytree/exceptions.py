@@ -23,7 +23,7 @@ class NodeTypeError(BinaryTreeError):
 
 
 class NodeValueError(BinaryTreeError):
-    """Node value was not a number (e.g. int, float)."""
+    """Node value was not a number (e.g. float, int, str)."""
 
 
 class TreeHeightError(BinaryTreeError):

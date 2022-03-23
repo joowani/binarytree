@@ -8,7 +8,7 @@ Binarytree uses the following class to represent a node:
     class Node:
 
         def __init__(self, value, left=None, right=None):
-            self.value = value  # The node value (integer)
+            self.value = value  # The node value (float/int/str)
             self.left = left    # Left child
             self.right = right  # Right child
 
@@ -301,7 +301,7 @@ the `indexing properties`_:
     4   5
     <BLANKLINE>
 
-    >>> # First representation is was already shown above.
+    >>> # First representation is already shown above.
     >>> # All "null" nodes in each level are present.
     >>> root.values
     [1, 2, None, 3, None, None, None, 4, 5]
