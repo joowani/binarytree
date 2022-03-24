@@ -21,7 +21,12 @@ from subprocess import SubprocessError
 from typing import Any, Deque, Dict, Iterator, List, Optional, Tuple, Union
 
 from graphviz import Digraph, nohtml
-from graphviz.exceptions import ExecutableNotFound
+
+try:
+    from graphviz.exceptions import ExecutableNotFound
+except ImportError:
+    # noinspection PyProtectedMember
+    from graphviz import ExecutableNotFound
 from pkg_resources import get_distribution
 
 from binarytree.exceptions import (
