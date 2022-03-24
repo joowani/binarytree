@@ -58,6 +58,23 @@ Generate and pretty-print various types of binary trees:
      /  \       /
     0    10    6
 
+Generate trees with letter values instead of numbers:
+
+.. code-block:: python
+
+    >>> from binarytree import tree
+
+    >>> my_tree = tree(height=3, is_perfect=False, letters=True)
+
+    >>> print(my_tree)
+
+          ____H____
+         /         \
+      __E__         F__
+     /     \       /   \
+    M       G     J     B
+     \     /     /     / \
+      O   L     D     I   A
 
 Build your own trees:
 
@@ -275,10 +292,10 @@ Convert to `List representations`_:
     [7, 3, 2, 6, 9, None, 1, 5, 8]
 
 Binarytree supports another representation which is more compact but without
-the `indexing properties`_:
+the `indexing properties`_ (this method is often used in Leetcode_):
 
-.. _indexing properties:
-    https://en.wikipedia.org/wiki/Binary_tree#Arrays
+.. _indexing properties: https://en.wikipedia.org/wiki/Binary_tree#Arrays
+.. _Leetcode: https://leetcode.com/
 
 .. doctest::
 

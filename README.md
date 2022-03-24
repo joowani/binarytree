@@ -103,6 +103,25 @@ print(my_heap)
 #    0    10    6
 #
 ```
+Generate trees with letter values instead of numbers:
+
+```python
+from binarytree import tree
+
+my_tree = tree(height=3, is_perfect=False, letters=True)
+
+print(my_tree)
+#
+#          ____H____
+#         /         \
+#      __E__         F__
+#     /     \       /   \
+#    M       G     J     B
+#     \     /     /     / \
+#      O   L     D     I   A
+#
+```
+
 
 Build your own trees:
 
@@ -314,7 +333,8 @@ print(root.values)
 ```
 
 Binarytree supports another representation which is more compact but without
-the [indexing properties](https://en.wikipedia.org/wiki/Binary_tree#Arrays):
+the [indexing properties](https://en.wikipedia.org/wiki/Binary_tree#Arrays) 
+(this method is often used in [Leetcode](https://leetcode.com/)):
 
 ```python
 from binarytree import build, build2, Node
