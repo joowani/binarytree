@@ -11,9 +11,16 @@ Binarytree: Python Library for Studying Binary Trees
 Welcome to the documentation for **binarytree**.
 
 **Binarytree** is Python library which lets you generate, visualize, inspect and
-manipulate binary trees. Skip the tedious work of setting up test data, and dive
-straight into practising algorithms. Heaps and BSTs (binary search trees) are also
-supported.
+manipulate `binary trees`_. Skip the tedious work of setting up test data, and dive
+straight into practising algorithms. Heaps_ and `binary search trees`_ are also
+supported. Self-balancing search trees like `red-black`_ or `AVL`_ will be added in
+the future.
+
+.. _binary trees: https://en.wikipedia.org/wiki/Binary_tree
+.. _Heaps: https://en.wikipedia.org/wiki/Heap_(data_structure)
+.. _binary search trees: https://en.wikipedia.org/wiki/Binary_search_tree
+.. _red-black: https://en.wikipedia.org/wiki/Red%E2%80%93black_tree
+.. _AVL: https://en.wikipedia.org/wiki/AVL_tree
 
 Requirements
 ============
