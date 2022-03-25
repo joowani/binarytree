@@ -22,9 +22,9 @@ from typing import Any, Deque, Dict, Iterator, List, Optional, Tuple, Union
 
 from graphviz import Digraph, nohtml
 
-try:
+try:  # pragma: no cover
     from graphviz.exceptions import ExecutableNotFound
-except ImportError:
+except ImportError:  # pragma: no cover
     # noinspection PyProtectedMember
     from graphviz import ExecutableNotFound
 from pkg_resources import get_distribution
