@@ -96,3 +96,7 @@ binarytree/version.py
 
 # Jupyter Notebook
 *.ipynb
+
+# direnv
+.envrc
+.direnv/
