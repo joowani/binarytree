@@ -509,7 +509,7 @@ class Node:
         """
         try:
             # noinspection PyProtectedMember
-            return str(self.graphviz()._repr_svg_())
+            return self.graphviz()._repr_image_svg_xml()
 
         except (SubprocessError, ExecutableNotFound, FileNotFoundError):
             return self.svg()
