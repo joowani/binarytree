@@ -513,7 +513,7 @@ class Node:
                 return str(self.graphviz()._repr_svg_())
             except AttributeError:
                 # noinspection PyProtectedMember
-    	        return self.graphviz()._repr_image_svg_xml()
+                return self.graphviz()._repr_image_svg_xml()
 
         except (SubprocessError, ExecutableNotFound, FileNotFoundError):
             return self.svg()
