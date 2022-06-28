@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=42.1", "setuptools_scm[toml]>=7.0.2", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [tool.coverage.run]
 omit = ["binarytree/version.py"]
 
