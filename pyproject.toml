@@ -1,3 +1,61 @@
+[build-system]
+requires = ["setuptools>=61.2", "setuptools_scm[toml]>=7.0.2", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "binarytree"
+authors = [{name = "Joohwan Oh", email = "joohwan.oh@outlook.com"}]
+license = {text = "MIT"}
+description = "Python Library for Studying Binary Trees"
+readme = "README.md"
+keywords = ["tree", "heap", "bst", "education"]
+classifiers = [
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: Unix",
+    "Programming Language :: Python :: 3",
+    "Topic :: Documentation :: Sphinx",
+    "Topic :: Education",
+]
+urls = {Homepage = "https://github.com/joowani/binarytree"}
+requires-python = ">=3.7"
+dependencies = ["graphviz"]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+dev = [
+    "black>=22.1.0",
+    "flake8>=4.0.1",
+    "isort>=5.10.1",
+    "mypy>=0.931",
+    "pre-commit>=2.17.0",
+    "pytest>=6.2.1",
+    "pytest-cov>=2.10.1",
+    "sphinx",
+    "sphinx_rtd_theme",
+    "types-setuptools",
+    "types-dataclasses",
+]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools_scm]
+write_to = "binarytree/version.py"
+
+[tool.setuptools.packages.find]
+exclude = ["tests"]
+namespaces = false
+
+[tool.flake8]
+max-line-length = "88"
+extend-ignore = "E203, E741, W503"
+exclude = ".git .idea .*_cache dist htmlcov venv"
+per-file-ignores = "__init__.py:F401 conf.py:E402"
+
 [tool.coverage.run]
 omit = ["binarytree/version.py"]
 
@@ -8,9 +66,6 @@ profile = "black"
 addopts = "-s -vv -p no:warnings"
 minversion = "6.0"
 testpaths = ["tests"]
-
-[tool.setuptools_scm]
-write_to = "binarytree/version.py"
 
 [tool.mypy]
 warn_return_any = true

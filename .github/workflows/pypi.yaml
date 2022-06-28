@@ -16,9 +16,9 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install setuptools wheel twine setuptools_scm[toml]
+        pip install setuptools wheel twine setuptools_scm[toml] build
     - name: Build distribution
-      run: python setup.py sdist bdist_wheel
+      run: python -m build -nwsx .
     - name: Publish to PyPI Test
       env:
         TWINE_USERNAME: __token__
